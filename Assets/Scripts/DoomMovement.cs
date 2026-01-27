@@ -116,4 +116,27 @@ public class DoomMovement : MonoBehaviour
     {
         return new Vector3(velocity.x, 0, velocity.z).magnitude;
     }
+
+    // Handle collisions to prevent sticking to walls
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        // If we hit a wall (surface that isn't excessively flat like ground/ceiling)
+        // Normal.y of 1 is flat up, -1 is flat down. Walls are roughly 0.
+        // We use < 0.7f (approx 45 degrees) to define a wall.
+        if (hit.normal.y < 0.7f)
+        {
+            // Debug.DrawRay(hit.point, hit.normal, Color.red, 1f);
+            
+            // Check if we are moving INTO the wall
+            float projection = Vector3.Dot(velocity, hit.normal);
+            
+            // If dragging into wall (negative dot product)
+            if (projection < 0)
+            {
+                // Project velocity onto the wall plane (remove the component pointing into the wall)
+                // This creates a nice "slide" effect and stops the "sticking" behavior
+                velocity -= projection * hit.normal;
+            }
+        }
+    }
 }
