@@ -35,7 +35,7 @@ public class DoomMovement : MonoBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
         bool sprint = Input.GetKey(KeyCode.LeftShift);
-        bool jump = Input.GetButtonDown("Jump");
+        bool jump = Input.GetButton("Jump"); // Changed to GetButton for auto-hop
         
         // Calculate movement direction relative to where player is facing
         Vector3 inputDirection = transform.right * horizontal + transform.forward * vertical;

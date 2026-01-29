@@ -13,6 +13,8 @@ public class WeaponController : MonoBehaviour
     public float currentMana;
     public float manaCost = 10f;
     public float manaRegen = 5f;
+    [Tooltip("Distance in front of the fire point to spawn the fireball")]
+    public float spawnOffset = 1.0f; // Added offset
 
     private float nextFireTime = 0f;
 
@@ -69,8 +71,11 @@ public class WeaponController : MonoBehaviour
             // Calculate direction from firePoint to targetPoint
             Vector3 direction = (targetPoint - firePoint.position).normalized;
             
+            // Calculate spawn position with offset
+            Vector3 spawnPosition = firePoint.position + (direction * spawnOffset);
+
             // Instantiate and rotate to look at target
-            GameObject fireball = Instantiate(fireballPrefab, firePoint.position, Quaternion.LookRotation(direction));
+            Instantiate(fireballPrefab, spawnPosition, Quaternion.LookRotation(direction));
         }
     }
 }
