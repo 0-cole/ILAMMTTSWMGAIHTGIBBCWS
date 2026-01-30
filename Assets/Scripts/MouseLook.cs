@@ -18,12 +18,10 @@ public class MouseLook : MonoBehaviour
     private Vector2 currentMouseDelta;
     private Vector2 currentMouseDeltaVelocity;
     
+    private bool isCursorLocked = false;
+
     void Start()
     {
-        // Lock and hide cursor
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        
         // Get reference to parent (player body)
         playerBody = transform.parent;
         
@@ -31,12 +29,30 @@ public class MouseLook : MonoBehaviour
         {
             Debug.LogError("MouseLook: Camera must be a child of the Player object!");
         }
+
+        // Lock cursor on start
+        LockCursor();
     }
     
     void Update()
     {
+        // Toggle cursor lock with Escape
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (isCursorLocked)
+                UnlockCursor();
+            else
+                LockCursor();
+        }
+
+        // Don't process mouse look if cursor is unlocked
+        if (!isCursorLocked)
+        {
+            return;
+        }
+
         // Get raw mouse input for 1:1 movement
-        float mouseX = Input.GetAxisRaw("Mouse X") * sensitivityX * sensitivityMultiplier * 100f; // * 100 to keep values reasonable relative to Unity's default
+        float mouseX = Input.GetAxisRaw("Mouse X") * sensitivityX * sensitivityMultiplier * 100f;
         float mouseY = Input.GetAxisRaw("Mouse Y") * sensitivityY * sensitivityMultiplier * 100f;
         
         Vector2 targetMouseDelta = new Vector2(mouseX, mouseY);
@@ -66,16 +82,26 @@ public class MouseLook : MonoBehaviour
         {
             playerBody.Rotate(Vector3.up * currentMouseDelta.x);
         }
-        
-        // Unlock cursor with Escape
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-        
-        // Re-lock cursor on mouse click
-        if (Input.GetMouseButtonDown(0))
+    }
+
+    void LockCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        isCursorLocked = true;
+    }
+
+    void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        isCursorLocked = false;
+    }
+
+    // Re-lock when window regains focus
+    void OnApplicationFocus(bool hasFocus)
+    {
+        if (hasFocus && isCursorLocked)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
