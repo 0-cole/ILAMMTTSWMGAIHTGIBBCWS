@@ -15,6 +15,13 @@ public class GlonkEnemy : MonoBehaviour
     [Header("Effects")]
     [SerializeField] private GameObject deathEffect;
 
+    [Header("Pickups")]
+    [SerializeField] private GameObject healthPickupPrefab;
+    [SerializeField] private GameObject manaPickupPrefab;
+    [Range(0f, 1f)] [SerializeField] private float healthDropChance = 0.3f;
+    [Range(0f, 1f)] [SerializeField] private float manaDropChance = 0.5f;
+    [SerializeField] private float pickupSpawnForce = 3f;
+
     private NavMeshAgent agent;
     private Transform playerTransform;
     private float nextPathUpdate;
@@ -82,14 +89,38 @@ public class GlonkEnemy : MonoBehaviour
             Instantiate(deathEffect, transform.position, Quaternion.identity);
         }
 
+        // Drop pickups (DOOM-style)
+        SpawnPickup(healthPickupPrefab, healthDropChance);
+        SpawnPickup(manaPickupPrefab, manaDropChance);
+
         Destroy(gameObject);
+    }
+
+    void SpawnPickup(GameObject pickupPrefab, float dropChance)
+    {
+        if (pickupPrefab == null) return;
+        if (Random.value > dropChance) return; // Random chance
+
+        GameObject pickup = Instantiate(pickupPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        
+        // Add slight upward force for visual pop
+        Rigidbody rb = pickup.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-1f, 1f)).normalized;
+            rb.AddForce(randomDirection * pickupSpawnForce, ForceMode.Impulse);
+        }
     }
     
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            // Debug.Log("Glonk hit player!");
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damageOnContact);
+            }
         }
     }
 }

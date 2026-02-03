@@ -1,82 +1,106 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
 
 public class SimpleHUD : MonoBehaviour
 {
     [Header("References")]
-    public WeaponController weaponController;
-    public TextMeshProUGUI manaTextTMP;
-    public Text manaTextLegacy;
+    [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private Image healthBarFill;
+    [SerializeField] private Image healthPanelBackground;
+    [SerializeField] private Image damageOverlay; // Optional: full-screen red flash
 
-    [Header("Smooth Counter Settings")]
-    [SerializeField] private float lerpSpeed = 10f;
-    [SerializeField] private bool useSmoothing = true;
+    [Header("Animation Settings")]
+    [SerializeField] private float fillSmoothSpeed = 10f;
+    [SerializeField] private float colorSmoothSpeed = 5f; // New: Smooth color transition
+    [SerializeField] private float overlayFadeSpeed = 2f;
 
-    [Header("Visual Polish")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color lowManaColor = new Color(1f, 0.3f, 0.3f);
-    [SerializeField] private float lowManaThreshold = 0.25f;
-    [SerializeField] private bool pulseWhenLow = true;
-    [SerializeField] private float pulseSpeed = 4f;
+    [Header("Color Coding")]
+    [SerializeField] private Color healthyColor = Color.green;
+    [SerializeField] private Color damagedColor = Color.yellow;
+    [SerializeField] private Color criticalColor = Color.red;
+    [SerializeField] private float damagedThreshold = 0.6f;
+    [SerializeField] private float criticalThreshold = 0.3f;
 
-    private float displayedMana;
-    private float targetMana;
+    private float targetFill = 1f;
+    private float overlayAlpha = 0f;
 
     void Start()
     {
-        if (weaponController != null)
+        if (playerHealth == null)
         {
-            displayedMana = weaponController.currentMana;
-            targetMana = weaponController.currentMana;
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
+        }
+
+        if (playerHealth != null)
+        {
+            playerHealth.OnHealthChanged += UpdateHealth;
+            UpdateHealth(playerHealth.GetHealthPercent() * 100f, 100f);
+        }
+
+        // Set initial transparency
+        if (healthPanelBackground != null)
+        {
+            CanvasGroup group = healthPanelBackground.GetComponent<CanvasGroup>();
+            if (group != null)
+            {
+                group.alpha = 0.85f;
+            }
+        }
+
+        // Hide damage overlay initially
+        if (damageOverlay != null)
+        {
+            Color c = damageOverlay.color;
+            c.a = 0f;
+            damageOverlay.color = c;
         }
     }
 
     void Update()
     {
-        if (weaponController == null) return;
-
-        targetMana = weaponController.currentMana;
-
-        if (useSmoothing)
+        // Smooth health bar animation
+        if (healthBarFill != null)
         {
-            displayedMana = Mathf.Lerp(displayedMana, targetMana, lerpSpeed * Time.deltaTime);
+            healthBarFill.fillAmount = Mathf.Lerp(healthBarFill.fillAmount, targetFill, fillSmoothSpeed * Time.deltaTime);
+
+            // Color coding logic
+            Color targetColor = healthyColor;
+            if (targetFill <= criticalThreshold) targetColor = criticalColor;
+            else if (targetFill <= damagedThreshold) targetColor = damagedColor;
+
+            // Smooth color transition
+            healthBarFill.color = Color.Lerp(healthBarFill.color, targetColor, colorSmoothSpeed * Time.deltaTime);
         }
-        else
+
+        // Fade out damage overlay
+        if (damageOverlay != null && overlayAlpha > 0f)
         {
-            displayedMana = targetMana;
-        }
-
-        int displayValue = Mathf.RoundToInt(displayedMana);
-        int maxValue = Mathf.RoundToInt(weaponController.maxMana);
-        
-        // Reverted <monospace> tag as it was rendering as raw text.
-        // Using "000" padding to keep width consistent (e.g. "095 / 100")
-        string manaString = $"<b>MANA</b>  {displayValue:000} / {maxValue}";
-
-        float manaRatio = weaponController.currentMana / weaponController.maxMana;
-        Color currentColor = normalColor;
-
-        if (manaRatio <= lowManaThreshold)
-        {
-            currentColor = lowManaColor;
+            overlayAlpha -= overlayFadeSpeed * Time.deltaTime;
+            overlayAlpha = Mathf.Max(overlayAlpha, 0f);
             
-            if (pulseWhenLow)
-            {
-                float pulse = (Mathf.Sin(Time.time * pulseSpeed) + 1f) / 2f;
-                currentColor = Color.Lerp(lowManaColor, normalColor, pulse * 0.3f);
-            }
+            Color c = damageOverlay.color;
+            c.a = overlayAlpha;
+            damageOverlay.color = c;
         }
+    }
 
-        if (manaTextTMP != null)
+    void UpdateHealth(float current, float max)
+    {
+        float previousFill = targetFill;
+        targetFill = current / max;
+
+        // Flash red when damaged
+        if (targetFill < previousFill && damageOverlay != null)
         {
-            manaTextTMP.text = manaString;
-            manaTextTMP.color = currentColor;
+            overlayAlpha = 0.3f; // Flash intensity
         }
-        else if (manaTextLegacy != null)
+    }
+
+    void OnDestroy()
+    {
+        if (playerHealth != null)
         {
-            manaTextLegacy.text = $"FIRE MANA: {displayValue:000} / {maxValue}";
-            manaTextLegacy.color = currentColor;
+            playerHealth.OnHealthChanged -= UpdateHealth;
         }
     }
 }

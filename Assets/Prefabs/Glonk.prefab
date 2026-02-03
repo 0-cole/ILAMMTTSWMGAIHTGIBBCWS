@@ -324,6 +324,11 @@ MonoBehaviour:
   damageOnContact: 10
   updatePathInterval: 0.2
   deathEffect: {fileID: 0}
+  healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
+  manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
+  healthDropChance: 0.3
+  manaDropChance: 0.5
+  pickupSpawnForce: 3
 --- !u!195 &7283346487723007959
 NavMeshAgent:
   m_ObjectHideFlags: 0
