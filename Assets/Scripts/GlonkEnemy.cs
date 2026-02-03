@@ -53,14 +53,33 @@ public class GlonkEnemy : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
+    [SerializeField] private float attackRange = 1.5f;
+    private float nextAttackTime;
+
     void Update()
     {
-        if (playerTransform != null && Time.time >= nextPathUpdate)
+        if (playerTransform != null)
         {
-            if (agent.isOnNavMesh)
+            // AI Movement
+            if (Time.time >= nextPathUpdate)
             {
-                nextPathUpdate = Time.time + updatePathInterval;
-                agent.SetDestination(playerTransform.position);
+                if (agent.isOnNavMesh)
+                {
+                    nextPathUpdate = Time.time + updatePathInterval;
+                    agent.SetDestination(playerTransform.position);
+                }
+            }
+
+            // Attack Logic (Distance Check because Collision is unreliable with NavMesh)
+            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+            if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
+            {
+                PlayerHealth ph = playerTransform.GetComponent<PlayerHealth>();
+                if (ph != null)
+                {
+                    ph.TakeDamage(damageOnContact);
+                    nextAttackTime = Time.time + 1.0f; // 1 second cooldown between hits
+                }
             }
         }
     }
@@ -82,8 +101,13 @@ public class GlonkEnemy : MonoBehaviour
         }
     }
 
+    private bool isDead = false;
+
     void Die()
     {
+        if (isDead) return;
+        isDead = true;
+
         if (deathEffect != null)
         {
             Instantiate(deathEffect, transform.position, Quaternion.identity);

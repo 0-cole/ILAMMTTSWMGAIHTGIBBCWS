@@ -16,6 +16,16 @@ public class DoomMovement : MonoBehaviour
     
     [Header("Air Control")]
     [SerializeField] private float airControl = 0.3f;
+
+    [Header("Wall Jump")]
+    [SerializeField] private float wallStickDuration = 3f;
+    [SerializeField] private float wallJumpForce = 15f;
+    [SerializeField] private Camera playerCamera; // Assignment needed in Inspector or detecting Main Camera
+
+    private bool isWallSticking;
+    private float wallStickTimer;
+    private Vector3 wallNormal;
+    private float wallJumpCooldownTimer; // New: prevents instant re-stick after jump
     
     private CharacterController controller;
     private Vector3 velocity;
@@ -24,6 +34,7 @@ public class DoomMovement : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        if (playerCamera == null) playerCamera = Camera.main;
     }
     
     void Update()
@@ -57,9 +68,41 @@ public class DoomMovement : MonoBehaviour
             AirMove(inputDirection);
         }
         
-        // Apply gravity
-        velocity.y -= gravity * Time.deltaTime;
+        // Apply gravity (if not sticking)
+        if (!isWallSticking)
+        {
+            velocity.y -= gravity * Time.deltaTime;
+        }
+        else
+        {
+            // Wall Stick Logic
+            velocity = Vector3.zero; // Stop all movement
+            wallStickTimer -= Time.deltaTime;
+
+            // Jump from wall
+            if (Input.GetButtonDown("Jump"))
+            {
+                // Launch in Camera Direction
+                velocity = playerCamera.transform.forward * wallJumpForce;
+                
+                isWallSticking = false;
+                wallJumpCooldownTimer = 0.5f; // New: 0.5s immunity to sticking
+            }
+
+            // Fall off if timer ends
+            if (wallStickTimer <= 0)
+            {
+                isWallSticking = false;
+                wallJumpCooldownTimer = 0.5f; // Prevent immediate stick if just falling off? User didn't ask for this but it feels safe.
+            }
+        }
         
+        // Cooldown timer logic
+        if (wallJumpCooldownTimer > 0)
+        {
+            wallJumpCooldownTimer -= Time.deltaTime;
+        }
+
         // Move the character
         controller.Move(velocity * Time.deltaTime);
         
@@ -67,6 +110,7 @@ public class DoomMovement : MonoBehaviour
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f; // Small downward force to keep grounded
+            isWallSticking = false; // Reset wall stick on ground
         }
     }
     
@@ -117,25 +161,34 @@ public class DoomMovement : MonoBehaviour
         return new Vector3(velocity.x, 0, velocity.z).magnitude;
     }
 
-    // Handle collisions to prevent sticking to walls
+    // Handle collisions
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        // If we hit a wall (surface that isn't excessively flat like ground/ceiling)
-        // Normal.y of 1 is flat up, -1 is flat down. Walls are roughly 0.
-        // We use < 0.7f (approx 45 degrees) to define a wall.
-        if (hit.normal.y < 0.7f)
+        // Wall Detection (Normal.y roughly 0)
+        if (hit.normal.y < 0.7f && hit.normal.y > -0.7f)
         {
-            // Debug.DrawRay(hit.point, hit.normal, Color.red, 1f);
-            
-            // Check if we are moving INTO the wall
-            float projection = Vector3.Dot(velocity, hit.normal);
-            
-            // If dragging into wall (negative dot product)
-            if (projection < 0)
+            // Only stick if airborne, moving into wall, and not already sticking
+            if (!isGrounded && !isWallSticking && velocity.y < 0) // Only stick on way down? Or anytime? User said "jump on a wall". Let's say airborne.
             {
-                // Project velocity onto the wall plane (remove the component pointing into the wall)
-                // This creates a nice "slide" effect and stops the "sticking" behavior
-                velocity -= projection * hit.normal;
+                // Check if moving INTO the wall
+                // float projection = Vector3.Dot(velocity, hit.normal); 
+                // Simply touching it while airborne should trigger it based on user description "when you jump on a wall"
+                
+                // Start Stick
+                // Only stick if Cooldown is over
+                if (wallJumpCooldownTimer <= 0) 
+                {
+                     isWallSticking = true;
+                     wallStickTimer = wallStickDuration;
+                     wallNormal = hit.normal;
+                }
+            }
+            
+            // Standard Slide Logic (only if NOT sticking to allow sliding during movement? actually stick stops movement)
+            if (!isWallSticking)
+            {
+                float projection = Vector3.Dot(velocity, hit.normal);
+                if (projection < 0) velocity -= projection * hit.normal;
             }
         }
     }

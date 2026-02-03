@@ -6,6 +6,7 @@ public class SimpleHUD : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private Image healthBarFill;
+    [SerializeField] private TMPro.TextMeshProUGUI healthText; // New: Displays "100" or "100%"
     [SerializeField] private Image healthPanelBackground;
     [SerializeField] private Image damageOverlay; // Optional: full-screen red flash
 
@@ -92,7 +93,13 @@ public class SimpleHUD : MonoBehaviour
         // Flash red when damaged
         if (targetFill < previousFill && damageOverlay != null)
         {
-            overlayAlpha = 0.3f; // Flash intensity
+            overlayAlpha = 0.6f; // Increased flash intensity (was 0.3f)
+        }
+
+        if (healthText != null)
+        {
+            healthText.text = Mathf.CeilToInt(current).ToString();
+            // Optional: Change text color based on health?
         }
     }
 
