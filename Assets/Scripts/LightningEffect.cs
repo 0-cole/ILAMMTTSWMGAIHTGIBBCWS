@@ -11,11 +11,15 @@ public class LightningEffect : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
     }
 
-    public void Setup(Vector3 start, Vector3 end)
+    public void Setup(System.Collections.Generic.List<Vector3> points)
     {
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPosition(0, start);
-        lineRenderer.SetPosition(1, end);
+        if (points == null || points.Count < 2) return;
+
+        lineRenderer.positionCount = points.Count;
+        for (int i = 0; i < points.Count; i++)
+        {
+            lineRenderer.SetPosition(i, points[i]);
+        }
     }
 
     void Update()

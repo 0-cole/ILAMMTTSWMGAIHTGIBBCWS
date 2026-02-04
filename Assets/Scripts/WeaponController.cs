@@ -26,9 +26,8 @@ public class WeaponController : MonoBehaviour
     [Header("Lightning Stats")]
     public float lightningDamage = 5f;
     public float lightningRange = 30f;
-    public float lightningManaCost = 2.5f; 
-    public int lightningPellets = 8;
-    public float lightningSpread = 0.1f;
+    public float lightningManaCost = 25f; 
+
     public GameObject lightningEffectPrefab;
     
     [Header("Weapon System")]
@@ -240,49 +239,123 @@ public class WeaponController : MonoBehaviour
         }
     }
 
+
     void ShootLightning()
     {
-        for (int i = 0; i < lightningPellets; i++)
+        StartCoroutine(ChainLightningRoutine());
+    }
+
+    System.Collections.IEnumerator ChainLightningRoutine()
+    {
+        // Settings
+        int maxBounces = 50; 
+        float currentDamage = lightningDamage; 
+        float bounceRange = 15f; 
+        float bounceDelay = 0.25f; // Wait time between arcs
+
+        System.Collections.Generic.HashSet<GameObject> hitEnemies = new System.Collections.Generic.HashSet<GameObject>();
+
+        // Start point
+        Vector3 currentPosition = (firePoint != null) ? firePoint.position : playerCamera.position;
+
+        // 1. Find Initial Target
+        GameObject currentTarget = null;
+        RaycastHit hit;
+        if (Physics.SphereCast(playerCamera.position, 1f, playerCamera.forward, out hit, lightningRange))
         {
-            // Calculate spread
-            Vector3 direction = playerCamera.forward;
-            direction.x += Random.Range(-lightningSpread, lightningSpread);
-            direction.y += Random.Range(-lightningSpread, lightningSpread);
-            direction.z += Random.Range(-lightningSpread, lightningSpread);
-            direction.Normalize();
+            GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
+            if (enemy != null) currentTarget = enemy.gameObject;
+        }
 
-            RaycastHit hit;
-            Vector3 endPoint;
-
-            // Hitscan logic
-            if (Physics.Raycast(playerCamera.position, direction, out hit, lightningRange))
+        if (currentTarget == null)
+        {
+            Collider[] colliders = Physics.OverlapSphere(playerCamera.position + playerCamera.forward * 5f, 5f);
+            float closestDist = Mathf.Infinity;
+            foreach (var col in colliders)
             {
-                endPoint = hit.point;
-                
-                Debug.Log($"[Lightning] Raycast hit: {hit.collider.gameObject.name}");
-                
-                // Damage Glonk (or other enemies) - search parent hierarchy
-                GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
+                GlonkEnemy enemy = col.GetComponentInParent<GlonkEnemy>();
                 if (enemy != null)
                 {
-                    Debug.Log($"[Lightning] Damaging Glonk: {enemy.gameObject.name}");
-                    enemy.TakeDamage(lightningDamage);
+                    float d = Vector3.Distance(playerCamera.position, enemy.transform.position);
+                    if (d < closestDist)
+                    {
+                        closestDist = d;
+                        currentTarget = enemy.gameObject;
+                    }
                 }
+            }
+        }
+
+        // Initial Shot Visual (Player to Target OR Player to Air)
+        Vector3 initialEndPoint = (currentTarget != null) ? currentTarget.transform.position : (playerCamera.position + playerCamera.forward * lightningRange);
+        SpawnLightningSegment(currentPosition, initialEndPoint);
+        
+        if (currentTarget == null) yield break; // Missed initial shot, stop chain
+
+        // 2. Chain Logic
+        for (int i = 0; i < maxBounces; i++)
+        {
+            if (currentTarget == null) break;
+
+            // Register Hit & Damage
+            hitEnemies.Add(currentTarget);
+            GlonkEnemy enemyScript = currentTarget.GetComponentInParent<GlonkEnemy>();
+            if (enemyScript != null)
+            {
+                enemyScript.TakeDamage(currentDamage);
+            }
+
+            // Wait before arcing to next
+            yield return new WaitForSeconds(bounceDelay);
+
+            // Update Start Position (use current enemy position in case they moved)
+            if (currentTarget != null) currentPosition = currentTarget.transform.position;
+            else break; // Enemy died/destroyed during wait
+
+            // 3. Find Next Target
+            GameObject nextTarget = null;
+            Collider[] potentialTargets = Physics.OverlapSphere(currentPosition, bounceRange);
+            float closestNextDist = Mathf.Infinity;
+
+            foreach (var col in potentialTargets)
+            {
+                GlonkEnemy enemy = col.GetComponentInParent<GlonkEnemy>();
+                if (enemy != null && !hitEnemies.Contains(enemy.gameObject))
+                {
+                    float d = Vector3.Distance(currentPosition, enemy.transform.position);
+                    if (d < closestNextDist)
+                    {
+                        closestNextDist = d;
+                        nextTarget = enemy.gameObject;
+                    }
+                }
+            }
+
+            if (nextTarget != null)
+            {
+                // Visual for the Arc
+                SpawnLightningSegment(currentPosition, nextTarget.transform.position);
+                currentTarget = nextTarget;
             }
             else
             {
-                endPoint = playerCamera.position + direction * lightningRange;
+                break; // No more targets
             }
+        }    
+    }
 
-            // Visual Effect
-            if (lightningEffectPrefab != null && firePoint != null)
+    void SpawnLightningSegment(Vector3 start, Vector3 end)
+    {
+        if (lightningEffectPrefab != null)
+        {
+            GameObject effectObj = Instantiate(lightningEffectPrefab, Vector3.zero, Quaternion.identity);
+            LightningEffect effect = effectObj.GetComponent<LightningEffect>();
+            if (effect != null)
             {
-                GameObject effectObj = Instantiate(lightningEffectPrefab, Vector3.zero, Quaternion.identity);
-                LightningEffect effect = effectObj.GetComponent<LightningEffect>();
-                if (effect != null)
-                {
-                    effect.Setup(firePoint.position, endPoint);
-                }
+                System.Collections.Generic.List<Vector3> points = new System.Collections.Generic.List<Vector3>();
+                points.Add(start);
+                points.Add(end);
+                effect.Setup(points);
             }
         }
     }

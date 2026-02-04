@@ -153,6 +153,11 @@ Transform:
   - {fileID: 1355154398}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &330585546 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1249296367782318648, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+  m_PrefabInstance: {fileID: 2173785695920771774}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &347124031
 GameObject:
   m_ObjectHideFlags: 0
@@ -1157,6 +1162,11 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!4 &727935292 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5254766331282647559, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+  m_PrefabInstance: {fileID: 2173785695920771774}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2855,6 +2865,74 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: firePoint
+      value: 
+      objectReference: {fileID: 727935292}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: manaRegen
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: playerCamera
+      value: 
+      objectReference: {fileID: 330585546}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: fireballPrefab
+      value: 
+      objectReference: {fileID: 1994264577554675325, guid: e06d7af0d80edf047bb87e88061affba, type: 3}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: lightningDamage
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: lightningSpread
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: lightningPellets
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: lightningManaCost
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: lightningEffectPrefab
+      value: 
+      objectReference: {fileID: 3419906698017330386, guid: 88690b0b362411f4b90f5df707b0d17b, type: 3}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[0].name
+      value: Fireball
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[1].name
+      value: Lightning
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[0].isUnlocked
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[0].modelPrefab
+      value: 
+      objectReference: {fileID: 919132149155446097, guid: 6e8622076fdacf542a8ea3550a3c1c1f, type: 3}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[1].modelPrefab
+      value: 
+      objectReference: {fileID: 919132149155446097, guid: 1a659f8057f5c8c4b9afd747ab91b0c8, type: 3}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[0].weaponTypeIndex
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: weapons.Array.data[1].weaponTypeIndex
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6706610844150544697, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

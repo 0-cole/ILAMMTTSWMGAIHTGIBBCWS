@@ -18,7 +18,7 @@ public class MouseLook : MonoBehaviour
     private Vector2 currentMouseDelta;
     private Vector2 currentMouseDeltaVelocity;
     
-    private bool isCursorLocked = false;
+
 
     void Start()
     {
