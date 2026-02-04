@@ -18,13 +18,22 @@ public class PickupItem : MonoBehaviour
     private Vector3 startPosition;
     private float bobOffset;
 
+    // Static cache - all pickups share the same player reference
+    private static Transform cachedPlayerTransform;
+
     void Start()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
+        // Use cached player reference if available
+        if (cachedPlayerTransform == null)
         {
-            playerTransform = player.transform;
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                cachedPlayerTransform = player.transform;
+            }
         }
+        
+        playerTransform = cachedPlayerTransform;
 
         startPosition = transform.position;
         bobOffset = Random.Range(0f, Mathf.PI * 2f); // Random bobbing phase

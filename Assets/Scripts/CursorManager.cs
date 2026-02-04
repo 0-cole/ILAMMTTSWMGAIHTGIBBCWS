@@ -15,20 +15,7 @@ public class CursorManager : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        // Escape to unlock cursor (for menu access)
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            ToggleCursor();
-        }
-
-        // Click to re-lock cursor when unlocked
-        if (!isCursorLocked && Input.GetMouseButtonDown(0))
-        {
-            LockCursor();
-        }
-    }
+    // Update removed: Input handling moved to PauseManager
 
     public void LockCursor()
     {
@@ -46,10 +33,16 @@ public class CursorManager : MonoBehaviour
 
     public void ToggleCursor()
     {
-        if (isCursorLocked)
+        // If locked, unlock
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
             UnlockCursor();
+        }
+        // If unlocked (None or Confined), lock
         else
+        {
             LockCursor();
+        }
     }
 
     public bool IsCursorLocked()

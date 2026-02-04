@@ -13,7 +13,6 @@ public class WickedFireball : MonoBehaviour
     [SerializeField] private int particleCount = 30;
 
     private Rigidbody rb;
-    private float launchDelay = 0.05f;
     private float spawnTime;
     
     // Static texture cache
@@ -46,24 +45,32 @@ public class WickedFireball : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (Time.time - spawnTime < launchDelay)
+        // Check for Player collision (friendly fire)
+        // Check both the object and its root to catch child colliders
+        if (other.CompareTag("Player") || other.transform.root.CompareTag("Player") || other.GetComponent<CharacterController>() != null)
             return;
-            
-        if (other.CompareTag("Player") || other.GetComponent<CharacterController>() != null)
-            return;
+
+        // Prevent self-collision with the fireball's own other colliders (if any)
+        if (other.gameObject == gameObject) return;
             
         HandleImpact(other.gameObject);
     }
 
     void HandleImpact(GameObject hitObject)
     {
+        Debug.Log($"[Fireball] Impact on {hitObject.name} at {transform.position}");
+        
         // AOE Damage
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        Debug.Log($"[Fireball] Found {hitColliders.Length} colliders in explosion radius");
+        
         foreach (var hitCollider in hitColliders)
         {
-            GlonkEnemy glonk = hitCollider.GetComponent<GlonkEnemy>();
+            // Search parent hierarchy - Glonk component might be on parent object
+            GlonkEnemy glonk = hitCollider.GetComponentInParent<GlonkEnemy>();
             if (glonk != null)
             {
+                Debug.Log($"[Fireball] Damaging Glonk: {glonk.gameObject.name}");
                 glonk.TakeDamage(damage);
             }
         }

@@ -34,11 +34,28 @@ public class WeaponDisplay : MonoBehaviour
     private int lastWeaponType = -1; 
     private Coroutine currentFlipRoutine;
 
+    [Header("3D Icon Settings")]
+    [SerializeField] private Transform modelSpawnPoint; // Where to spawn the 3D book in HUD
+    [SerializeField] private float modelSpinSpeed = 90f;
+    [SerializeField] private float modelScale = 100f; // Scale up for UI
+    
+    private GameObject currentModelObject;
+
     void Start()
     {
+        // weaponController should be assigned in Inspector for best performance
+        // Fallback to Find if not assigned (but log warning)
         if (weaponController == null)
         {
             weaponController = FindFirstObjectByType<WeaponController>();
+            if (weaponController == null)
+            {
+                Debug.LogError("[WeaponDisplay] WeaponController not found! Please assign in Inspector.");
+            }
+            else
+            {
+                Debug.LogWarning("[WeaponDisplay] WeaponController found via search. Assign in Inspector for better performance.");
+            }
         }
 
         // Set initial transparency
@@ -56,16 +73,24 @@ public class WeaponDisplay : MonoBehaviour
     {
         if (weaponController == null) return;
 
-        if (weaponController.currentWeaponType != lastWeaponType)
+        if (weaponController == null || weaponController.weapons.Count == 0) return;
+
+        int currentType = weaponController.weapons[weaponController.currentWeaponIndex].weaponTypeIndex;
+
+        if (currentType != lastWeaponType)
         {
             if (currentFlipRoutine != null) StopCoroutine(currentFlipRoutine);
-            currentFlipRoutine = StartCoroutine(FlipWeaponText(weaponController.currentWeaponType));
+            currentFlipRoutine = StartCoroutine(FlipWeaponText(currentType));
             
-            lastWeaponType = weaponController.currentWeaponType;
+            lastWeaponType = currentType;
         }
 
-        // Spin the weapon icon
-        if (weaponIcon != null)
+        // Spin the weapon icon (2D or 3D)
+        if (currentModelObject != null)
+        {
+            currentModelObject.transform.Rotate(Vector3.up, modelSpinSpeed * Time.deltaTime);
+        }
+        else if (weaponIcon != null)
         {
             weaponIcon.transform.Rotate(Vector3.forward, iconSpinSpeed * Time.deltaTime);
         }
@@ -108,16 +133,46 @@ public class WeaponDisplay : MonoBehaviour
         }
         weaponText.transform.localRotation = midRot;
 
-        // 2. Change Sprite
-        if (type == 0) // Fireball
+        // 2. Change Sprite / Model
+        if (weaponController != null && weaponController.weapons.Count > type)
         {
-            if (weaponIcon != null) weaponIcon.sprite = fireballIconSprite;
-            if (weaponText != null) weaponText.sprite = fireballTextSprite;
-        }
-        else // Lightning
-        {
-            if (weaponIcon != null) weaponIcon.sprite = lightningIconSprite;
-            if (weaponText != null) weaponText.sprite = lightningTextSprite;
+            // Update 2D Text
+            if (type == 0) // Fireball
+            {
+                if (weaponText != null) weaponText.sprite = fireballTextSprite;
+            }
+            else // Lightning
+            {
+                if (weaponText != null) weaponText.sprite = lightningTextSprite;
+            }
+
+            // Update Icon (2D or 3D)
+            GameObject prefab = weaponController.weapons[weaponController.currentWeaponIndex].modelPrefab;
+            
+            // Clean up old model
+            if (currentModelObject != null) Destroy(currentModelObject);
+
+            if (prefab != null && modelSpawnPoint != null)
+            {
+                // Use 3D Model
+                if (weaponIcon != null) weaponIcon.enabled = false; // Hide 2D icon
+
+                currentModelObject = Instantiate(prefab, modelSpawnPoint);
+                currentModelObject.transform.localPosition = Vector3.zero;
+                currentModelObject.transform.localRotation = Quaternion.identity;
+                currentModelObject.transform.localScale = Vector3.one * modelScale;
+                SetLayerRecursively(currentModelObject, LayerMask.NameToLayer("UI"));
+            }
+            else
+            {
+                // Use 2D Sprite Fallback
+                if (weaponIcon != null) 
+                {
+                    weaponIcon.enabled = true;
+                    if (type == 0) weaponIcon.sprite = fireballIconSprite;
+                    else weaponIcon.sprite = lightningIconSprite; 
+                }
+            }
         }
 
         // 3. Rotate from -90 to 0 (Flip in)
@@ -132,5 +187,15 @@ public class WeaponDisplay : MonoBehaviour
             yield return null;
         }
         weaponText.transform.localRotation = finalRot;
+    }
+
+    void SetLayerRecursively(GameObject obj, int newLayer)
+    {
+        if (newLayer < 0) return;
+        obj.layer = newLayer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, newLayer);
+        }
     }
 }

@@ -2,79 +2,208 @@ using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
+    [System.Serializable]
+    public class WeaponEntry
+    {
+        public string name;
+        public bool isUnlocked;
+        public int weaponTypeIndex; // 0 for Fireball, 1 for Lightning, etc.
+        public GameObject modelPrefab; // New: 3D Model for UI
+    }
+
     [Header("References")]
     public Transform playerCamera;
-    public Transform firePoint;     // Assign a child of camera or hand position
+    public Transform firePoint;
     public GameObject fireballPrefab;
 
     [Header("Stats")]
     public float fireRate = 0.5f;
     public float maxMana = 100f;
     public float currentMana;
-    public float manaCost = 5f; // Cost per shot (Lowered for "healing/ammo" feel)
-    public float manaRegen = 1f; // Slow regen to encourage pickups
+    public float manaCost = 5f;
+    public float manaRegen = 1f;
     
     [Header("Lightning Stats")]
-    public float lightningDamage = 5f; // Lower damage per bolt since we shoot many
-    public float lightningRange = 30f; // Slightly shorter range for shotgun feel
+    public float lightningDamage = 5f;
+    public float lightningRange = 30f;
     public float lightningManaCost = 2.5f; 
-    public int lightningPellets = 8; // How many bolts?
-    public float lightningSpread = 0.1f; // How wide is the spread?
+    public int lightningPellets = 8;
+    public float lightningSpread = 0.1f;
     public GameObject lightningEffectPrefab;
-    [Tooltip("Distance in front of the fire point to spawn the fireball")]
-    public float spawnOffset = 1.0f; // Added offset
-
+    
     [Header("Weapon System")]
-    public int currentWeaponType = 0; // 0 = Fireball, 1 = Lightning
+    public float spawnOffset = 1.0f;
+    public System.Collections.Generic.List<WeaponEntry> weapons = new System.Collections.Generic.List<WeaponEntry>();
+    public int currentWeaponIndex = 0;
 
     private float nextFireTime = 0f;
 
     void Start()
     {
         currentMana = maxMana;
+        InitializeWeapons();
+        LoadWeapons();
     }
+
+    void InitializeWeapons()
+    {
+        if (weapons.Count == 0)
+        {
+            // Default setup if empty
+            weapons.Add(new WeaponEntry { name = "Fireball", isUnlocked = true, weaponTypeIndex = 0 });
+            weapons.Add(new WeaponEntry { name = "Lightning", isUnlocked = false, weaponTypeIndex = 1 });
+        }
+    }
+
+    private float manaBoostTimer = 0f;
+    private float manaBoostMultiplier = 2f;
+    private float manaBoostDuration = 20f;
 
     void Update()
     {
         // Weapon Switching (Q key)
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            currentWeaponType = (currentWeaponType + 1) % 2; // Toggle between 0 and 1
+            CycleWeapon();
         }
 
         // Mana Regen
         if (currentMana < maxMana)
         {
-            currentMana += manaRegen * Time.deltaTime;
+            float multiplier = (manaBoostTimer > 0) ? manaBoostMultiplier : 1f;
+            currentMana += manaRegen * multiplier * Time.deltaTime;
             currentMana = Mathf.Min(currentMana, maxMana);
         }
 
-        // Shooting
+        // Boost Timer
+        if (manaBoostTimer > 0)
+        {
+            manaBoostTimer -= Time.deltaTime;
+        }
+
         // Shooting
         if (Input.GetButton("Fire1") && Time.time >= nextFireTime)
         {
-            float cost = (currentWeaponType == 0) ? manaCost : lightningManaCost;
+            if (Time.timeScale == 0f) return; // Block input if paused
+
+            WeaponEntry currentWeapon = weapons[currentWeaponIndex];
+            float cost = (currentWeapon.weaponTypeIndex == 0) ? manaCost : lightningManaCost;
 
             if (currentMana >= cost)
             {
-                Shoot();
+                Shoot(currentWeapon.weaponTypeIndex);
                 nextFireTime = Time.time + fireRate;
-            }
-            else
-            {
-                // Play "Out of Mana" sound?
             }
         }
     }
 
-    void Shoot()
+    public void ActivateManaBoost()
     {
-        if (currentWeaponType == 0) // Fireball
+        manaBoostTimer = manaBoostDuration;
+        Debug.Log($"[Weapon] Mana Boost Activated! Double regen for {manaBoostDuration}s.");
+    }
+
+    public bool IsWeaponUnlocked(string weaponName)
+    {
+        foreach (var w in weapons)
+        {
+            if (w.name == weaponName) return w.isUnlocked;
+        }
+        return false;
+    }
+
+    void CycleWeapon()
+    {
+        int originalIndex = currentWeaponIndex;
+        int nextIndex = currentWeaponIndex;
+        
+        // Loop until we find an unlocked weapon or return to start
+        do
+        {
+            nextIndex = (nextIndex + 1) % weapons.Count;
+            if (weapons[nextIndex].isUnlocked)
+            {
+                currentWeaponIndex = nextIndex;
+                Debug.Log($"[Weapon] Switched to {weapons[currentWeaponIndex].name}");
+                return;
+            }
+        } while (nextIndex != originalIndex);
+    }
+
+    public void UnlockWeapon(string weaponName)
+    {
+        foreach (var weapon in weapons)
+        {
+            if (weapon.name == weaponName)
+            {
+                if (!weapon.isUnlocked)
+                {
+                    weapon.isUnlocked = true;
+                    SaveWeapons();
+                    Debug.Log($"[Weapon] Unlocked {weaponName}!");
+                }
+                return;
+            }
+        }
+        Debug.LogWarning($"[Weapon] Could not find weapon named {weaponName} to unlock.");
+    }
+
+    public void ResetWeapons()
+    {
+        PlayerPrefs.DeleteKey("WeaponUnlocks");
+        InitializeWeapons();
+        // Reset to defaults
+        foreach (var w in weapons)
+        {
+            w.isUnlocked = (w.name == "Fireball");
+        }
+        currentWeaponIndex = 0;
+        Debug.Log("[Weapon] Data wiped/Reset.");
+    }
+
+    void SaveWeapons()
+    {
+        string data = "";
+        foreach (var w in weapons)
+        {
+            if (w.isUnlocked) data += w.name + ",";
+        }
+        PlayerPrefs.SetString("WeaponUnlocks", data);
+        PlayerPrefs.Save();
+    }
+
+    void LoadWeapons()
+    {
+        if (PlayerPrefs.HasKey("WeaponUnlocks"))
+        {
+            string data = PlayerPrefs.GetString("WeaponUnlocks");
+            string[] unlockedNames = data.Split(',');
+            
+            foreach (var w in weapons)
+            {
+                // Fireball always unlocked
+                if (w.name == "Fireball") w.isUnlocked = true;
+                else
+                {
+                    bool found = false;
+                    foreach (string s in unlockedNames)
+                    {
+                        if (s == w.name) found = true;
+                    }
+                    w.isUnlocked = found;
+                }
+            }
+        }
+    }
+
+    void Shoot(int weaponType)
+    {
+        if (weaponType == 0) // Fireball
         {
             currentMana -= manaCost;
             ShootFireball();
         }
-        else if (currentWeaponType == 1) // Lightning
+        else if (weaponType == 1) // Lightning
         {
             currentMana -= lightningManaCost;
             ShootLightning();
@@ -130,10 +259,13 @@ public class WeaponController : MonoBehaviour
             {
                 endPoint = hit.point;
                 
-                // Damage Glonk (or other enemies)
-                GlonkEnemy enemy = hit.collider.GetComponent<GlonkEnemy>();
+                Debug.Log($"[Lightning] Raycast hit: {hit.collider.gameObject.name}");
+                
+                // Damage Glonk (or other enemies) - search parent hierarchy
+                GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
                 if (enemy != null)
                 {
+                    Debug.Log($"[Lightning] Damaging Glonk: {enemy.gameObject.name}");
                     enemy.TakeDamage(lightningDamage);
                 }
             }

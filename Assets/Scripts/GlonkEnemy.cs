@@ -24,6 +24,7 @@ public class GlonkEnemy : MonoBehaviour
 
     private NavMeshAgent agent;
     private Transform playerTransform;
+    private PlayerHealth cachedPlayerHealth; // Cache to avoid GetComponent every attack
     private float nextPathUpdate;
 
     public System.Action<float, float> OnHealthChanged;
@@ -38,6 +39,7 @@ public class GlonkEnemy : MonoBehaviour
         if (playerObj != null)
         {
             playerTransform = playerObj.transform;
+            cachedPlayerHealth = playerObj.GetComponent<PlayerHealth>(); // Cache the component
             Debug.Log($"[Glonk] Found Player: {playerObj.name}");
         }
         else
@@ -54,12 +56,33 @@ public class GlonkEnemy : MonoBehaviour
     }
 
     [SerializeField] private float attackRange = 1.5f;
+    [SerializeField] private float stunDuration = 1.0f; // How long to freeze after attacking
     private float nextAttackTime;
+    private float stunEndTime; // When the stun wears off
 
     void Update()
     {
         if (playerTransform != null)
         {
+            // Check if stunned (freeze after attack)
+            if (Time.time < stunEndTime)
+            {
+                // Stop the agent while stunned
+                if (agent.isOnNavMesh)
+                {
+                    agent.isStopped = true;
+                }
+                return; // Skip all movement/attack logic
+            }
+            else
+            {
+                // Resume movement if stun ended
+                if (agent.isOnNavMesh && agent.isStopped)
+                {
+                    agent.isStopped = false;
+                }
+            }
+
             // AI Movement
             if (Time.time >= nextPathUpdate)
             {
@@ -74,11 +97,11 @@ public class GlonkEnemy : MonoBehaviour
             float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
             if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
             {
-                PlayerHealth ph = playerTransform.GetComponent<PlayerHealth>();
-                if (ph != null)
+                if (cachedPlayerHealth != null)
                 {
-                    ph.TakeDamage(damageOnContact);
+                    cachedPlayerHealth.TakeDamage(damageOnContact);
                     nextAttackTime = Time.time + 1.0f; // 1 second cooldown between hits
+                    stunEndTime = Time.time + stunDuration; // Stun after attacking!
                 }
             }
         }
@@ -86,6 +109,8 @@ public class GlonkEnemy : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        Debug.Log($"[Glonk {gameObject.name}] TakeDamage called: {amount} damage. Current HP: {currentHealth}");
+        
         currentHealth -= amount;
         
         if (agent.enabled && agent.isOnNavMesh)

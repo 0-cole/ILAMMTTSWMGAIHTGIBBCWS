@@ -106,7 +106,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -127,7 +127,9 @@ MonoBehaviour:
   speed: 30
   damage: 50
   lifetime: 5
-  impactEffect: {fileID: 0}
+  createExplosionEffect: 1
+  explosionRadius: 1.5
+  particleCount: 30
 --- !u!108 &6885088080192500682
 Light:
   m_ObjectHideFlags: 0

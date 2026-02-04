@@ -27,9 +27,20 @@ public class SimpleHUD : MonoBehaviour
 
     void Start()
     {
+        // playerHealth should be assigned in Inspector for best performance
+        // Fallback to Find if not assigned (but log warning)
         if (playerHealth == null)
         {
             playerHealth = FindFirstObjectByType<PlayerHealth>();
+            if (playerHealth == null)
+            {
+                Debug.LogError("[SimpleHUD] PlayerHealth not found! Please assign in Inspector.");
+                return;
+            }
+            else
+            {
+                Debug.LogWarning("[SimpleHUD] PlayerHealth found via search. Assign in Inspector for better performance.");
+            }
         }
 
         if (playerHealth != null)

@@ -29,24 +29,12 @@ public class MouseLook : MonoBehaviour
         {
             Debug.LogError("MouseLook: Camera must be a child of the Player object!");
         }
-
-        // Lock cursor on start
-        LockCursor();
     }
     
     void Update()
     {
-        // Toggle cursor lock with Escape
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (isCursorLocked)
-                UnlockCursor();
-            else
-                LockCursor();
-        }
-
-        // Don't process mouse look if cursor is unlocked
-        if (!isCursorLocked)
+        // Don't process mouse look if paused
+        if (Time.timeScale == 0f || PauseManager.IsGamePaused)
         {
             return;
         }
@@ -81,30 +69,6 @@ public class MouseLook : MonoBehaviour
         if (playerBody != null)
         {
             playerBody.Rotate(Vector3.up * currentMouseDelta.x);
-        }
-    }
-
-    void LockCursor()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        isCursorLocked = true;
-    }
-
-    void UnlockCursor()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        isCursorLocked = false;
-    }
-
-    // Re-lock when window regains focus
-    void OnApplicationFocus(bool hasFocus)
-    {
-        if (hasFocus && isCursorLocked)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
     }
 }
