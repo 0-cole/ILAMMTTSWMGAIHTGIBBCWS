@@ -167,6 +167,17 @@ public class DoomMovement : MonoBehaviour
         // Wall Detection (Normal.y roughly 0)
         if (hit.normal.y < 0.7f && hit.normal.y > -0.7f)
         {
+            // Ignore Triggers (Orbs, Zones, etc.)
+            if (hit.collider.isTrigger) return;
+
+            // Ignore Dynamic Objects (Enemies, Pickups, etc.)
+            if (hit.gameObject.CompareTag("Enemy") || 
+                hit.gameObject.CompareTag("Orb") || 
+                hit.gameObject.CompareTag("Player"))
+            {
+                return;
+            }
+
             // Only stick if airborne, moving into wall, and not already sticking
             if (!isGrounded && !isWallSticking && velocity.y < 0) // Only stick on way down? Or anytime? User said "jump on a wall". Let's say airborne.
             {
