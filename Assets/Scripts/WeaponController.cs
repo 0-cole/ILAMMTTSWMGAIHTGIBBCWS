@@ -242,18 +242,11 @@ public class WeaponController : MonoBehaviour
 
     void ShootLightning()
     {
-        StartCoroutine(ChainLightningRoutine());
-    }
-
-    System.Collections.IEnumerator ChainLightningRoutine()
-    {
         // Settings
         int maxBounces = 50; 
         float currentDamage = lightningDamage; 
         float bounceRange = 15f; 
-        float bounceDelay = 0.25f; // Wait time between arcs
-
-        System.Collections.Generic.HashSet<GameObject> hitEnemies = new System.Collections.Generic.HashSet<GameObject>();
+        float bounceDelay = 0.25f;
 
         // Start point
         Vector3 currentPosition = (firePoint != null) ? firePoint.position : playerCamera.position;
@@ -261,6 +254,10 @@ public class WeaponController : MonoBehaviour
         // 1. Find Initial Target
         GameObject currentTarget = null;
         RaycastHit hit;
+        
+        // Visual for the initial shot (Raycast logic)
+        // We handle the FIRST segment here visually if we miss, otherwise pass control to runner
+        
         if (Physics.SphereCast(playerCamera.position, 1f, playerCamera.forward, out hit, lightningRange))
         {
             GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
@@ -269,6 +266,7 @@ public class WeaponController : MonoBehaviour
 
         if (currentTarget == null)
         {
+            // Sphere Check as fallback
             Collider[] colliders = Physics.OverlapSphere(playerCamera.position + playerCamera.forward * 5f, 5f);
             float closestDist = Mathf.Infinity;
             foreach (var col in colliders)
@@ -286,65 +284,23 @@ public class WeaponController : MonoBehaviour
             }
         }
 
-        // Initial Shot Visual (Player to Target OR Player to Air)
-        Vector3 initialEndPoint = (currentTarget != null) ? currentTarget.transform.position : (playerCamera.position + playerCamera.forward * lightningRange);
-        SpawnLightningSegment(currentPosition, initialEndPoint);
-        
-        if (currentTarget == null) yield break; // Missed initial shot, stop chain
-
-        // 2. Chain Logic
-        for (int i = 0; i < maxBounces; i++)
+        if (currentTarget != null)
         {
-            if (currentTarget == null) break;
-
-            // Register Hit & Damage
-            hitEnemies.Add(currentTarget);
-            GlonkEnemy enemyScript = currentTarget.GetComponentInParent<GlonkEnemy>();
-            if (enemyScript != null)
-            {
-                enemyScript.TakeDamage(currentDamage);
-            }
-
-            // Wait before arcing to next
-            yield return new WaitForSeconds(bounceDelay);
-
-            // Update Start Position (use current enemy position in case they moved)
-            if (currentTarget != null) currentPosition = currentTarget.transform.position;
-            else break; // Enemy died/destroyed during wait
-
-            // 3. Find Next Target
-            GameObject nextTarget = null;
-            Collider[] potentialTargets = Physics.OverlapSphere(currentPosition, bounceRange);
-            float closestNextDist = Mathf.Infinity;
-
-            foreach (var col in potentialTargets)
-            {
-                GlonkEnemy enemy = col.GetComponentInParent<GlonkEnemy>();
-                if (enemy != null && !hitEnemies.Contains(enemy.gameObject))
-                {
-                    float d = Vector3.Distance(currentPosition, enemy.transform.position);
-                    if (d < closestNextDist)
-                    {
-                        closestNextDist = d;
-                        nextTarget = enemy.gameObject;
-                    }
-                }
-            }
-
-            if (nextTarget != null)
-            {
-                // Visual for the Arc
-                SpawnLightningSegment(currentPosition, nextTarget.transform.position);
-                currentTarget = nextTarget;
-            }
-            else
-            {
-                break; // No more targets
-            }
-        }    
+            // Create the Runner to handle the Chain
+            GameObject runnerObj = new GameObject("ChainLightningRunner_" + Time.time);
+            ChainLightningRunner runner = runnerObj.AddComponent<ChainLightningRunner>();
+            runner.Initialize(currentPosition, currentTarget, currentDamage, maxBounces, bounceRange, bounceDelay, lightningEffectPrefab);
+        }
+        else
+        {
+            // Missed completely - Just show a dud line
+            Vector3 endPoint = playerCamera.position + playerCamera.forward * lightningRange;
+            SpawnLightningVisualCheck(currentPosition, endPoint);
+        }
     }
 
-    void SpawnLightningSegment(Vector3 start, Vector3 end)
+    // Helper for the "Miss" case only, since Runner handles the rest
+    void SpawnLightningVisualCheck(Vector3 start, Vector3 end)
     {
         if (lightningEffectPrefab != null)
         {
