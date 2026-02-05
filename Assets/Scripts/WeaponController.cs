@@ -30,6 +30,14 @@ public class WeaponController : MonoBehaviour
 
     public GameObject lightningEffectPrefab;
     
+    [Header("Punch Stats")]
+    public float punchDamage = 50f;
+    public float punchRange = 3f;
+    public float punchSelfDamage = 10f;
+    public float punchCooldown = 1f; 
+    public float punchVisualDuration = 0.5f; // Duration for the GIF to play
+    public GameObject punchOverlay; 
+
     [Header("Weapon System")]
     public float spawnOffset = 1.0f;
     public System.Collections.Generic.List<WeaponEntry> weapons = new System.Collections.Generic.List<WeaponEntry>();
@@ -42,7 +50,10 @@ public class WeaponController : MonoBehaviour
         currentMana = maxMana;
         InitializeWeapons();
         LoadWeapons();
+        
+        if (punchOverlay != null) punchOverlay.SetActive(false);
     }
+// ...
 
     void InitializeWeapons()
     {
@@ -51,6 +62,7 @@ public class WeaponController : MonoBehaviour
             // Default setup if empty
             weapons.Add(new WeaponEntry { name = "Fireball", isUnlocked = true, weaponTypeIndex = 0 });
             weapons.Add(new WeaponEntry { name = "Lightning", isUnlocked = false, weaponTypeIndex = 1 });
+            weapons.Add(new WeaponEntry { name = "ParryPunch", isUnlocked = false, weaponTypeIndex = 2 });
         }
     }
 
@@ -86,13 +98,37 @@ public class WeaponController : MonoBehaviour
             if (Time.timeScale == 0f) return; // Block input if paused
 
             WeaponEntry currentWeapon = weapons[currentWeaponIndex];
-            float cost = (currentWeapon.weaponTypeIndex == 0) ? manaCost : lightningManaCost;
+            
+            // Mana Check (Fireball/Lightning only)
+            // Punch uses HP, not Mana, so we skip mana check for type 2
+            bool canFire = false;
+            
+            if (currentWeapon.weaponTypeIndex == 2) // Punch
+            {
+                canFire = true; // Always fire if cooldown ready (HP check handled in Shoot)
+            }
+            else
+            {
+                float cost = (currentWeapon.weaponTypeIndex == 0) ? manaCost : lightningManaCost;
+                if (currentMana >= cost) canFire = true;
+            }
 
-            if (currentMana >= cost)
+            if (canFire)
             {
                 Shoot(currentWeapon.weaponTypeIndex);
-                nextFireTime = Time.time + fireRate;
+                // Use custom cooldown for punch if desired, otherwise standard fireRate
+                float cooldown = (currentWeapon.weaponTypeIndex == 2) ? punchCooldown : fireRate;
+                nextFireTime = Time.time + cooldown;
             }
+        }
+
+        // Quick Melee (F Key)
+        if (Input.GetKeyDown(KeyCode.F) && Time.time >= nextFireTime)
+        {
+             if (Time.timeScale == 0f) return;
+             
+             ShootPunch();
+             nextFireTime = Time.time + punchCooldown;
         }
     }
 
@@ -207,6 +243,38 @@ public class WeaponController : MonoBehaviour
             currentMana -= lightningManaCost;
             ShootLightning();
         }
+        else if (weaponType == 2) // Parry Punch
+        {
+            ShootPunch();
+        }
+    }
+
+    void ShootPunch()
+    {
+        // 1. Visuals
+        if (punchOverlay != null)
+        {
+            StartCoroutine(PunchFlashRoutine());
+        }
+
+        // 2. Hitscan Attack
+        RaycastHit hit;
+        if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, punchRange))
+        {
+            GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(punchDamage);
+                Debug.Log("PUNCH HIT!");
+            }
+        }
+    }
+
+    System.Collections.IEnumerator PunchFlashRoutine()
+    {
+        punchOverlay.SetActive(true);
+        yield return new WaitForSeconds(punchVisualDuration);
+        punchOverlay.SetActive(false);
     }
 
     void ShootFireball()
