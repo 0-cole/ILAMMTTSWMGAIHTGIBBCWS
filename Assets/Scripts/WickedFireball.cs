@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class WickedFireball : MonoBehaviour
 {
@@ -6,6 +7,10 @@ public class WickedFireball : MonoBehaviour
     [SerializeField] private float speed = 15f;
     [SerializeField] private float damage = 50f;
     [SerializeField] private float lifetime = 5f;
+
+    [Header("Boost Mechanics")]
+    [SerializeField] private float slowStartDuration = 0.25f;
+    [SerializeField] private float slowStartSpeed = 2f;
 
     [Header("Explosion Settings")]
     [SerializeField] private bool createExplosionEffect = true;
@@ -17,8 +22,17 @@ public class WickedFireball : MonoBehaviour
     
     // Static texture cache
     private static Texture2D cachedParticleTexture;
+    private Transform playerTransform;
+    private float punchRangeThreshold = 3f;
+    private Vector3 launchDirection;
 
-    void Start()
+    public void Initialize(Transform player, float range)
+    {
+        playerTransform = player;
+        punchRangeThreshold = range * 1.2f; // Slight buffer
+    }
+
+    IEnumerator Start()
     {
         spawnTime = Time.time;
         
@@ -32,7 +46,11 @@ public class WickedFireball : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         
-        rb.linearVelocity = transform.forward * speed;
+        // Cache Launch Direction (World Space) to prevent physics tumbling
+        launchDirection = transform.forward;
+
+        // Slow Start
+        rb.linearVelocity = launchDirection * slowStartSpeed;
         
         Collider col = GetComponent<Collider>();
         if (col != null)
@@ -40,6 +58,34 @@ public class WickedFireball : MonoBehaviour
             col.isTrigger = true;
         }
         
+        // Smart Acceleration Loop
+        float timer = 0f;
+        while (timer < slowStartDuration)
+        {
+            timer += Time.deltaTime;
+
+            if (isBoosted) break; // Already boosted, exit loop
+
+            if (playerTransform != null)
+            {
+                float dist = Vector3.Distance(transform.position, playerTransform.position);
+                if (dist > punchRangeThreshold)
+                {
+                    // Out of range, accelerate immediately
+                    break;
+                }
+            }
+            yield return null;
+        }
+
+        // Accelerate if not boosted
+        if (!isBoosted)
+        {
+            // Use cached direction instead of transform.forward
+            rb.linearVelocity = launchDirection * speed;
+        }
+        
+        // Safety destroy in case it wasn't destroyed earlier
         Destroy(gameObject, lifetime);
     }
 
@@ -98,8 +144,10 @@ public class WickedFireball : MonoBehaviour
         main.duration = 0.5f;
         main.loop = false;
         main.startLifetime = new ParticleSystem.MinMaxCurve(0.3f, 0.8f);
+        
+        // Restored logic
         main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 6f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.3f, 0.7f); // Slightly larger
+        main.startSize = new ParticleSystem.MinMaxCurve(0.3f, 0.7f);
         
         main.startColor = new ParticleSystem.MinMaxGradient(
             new Color(1f, 0.6f, 0f, 1f),
@@ -142,17 +190,45 @@ public class WickedFireball : MonoBehaviour
         sizeOverLifetime.enabled = true;
         sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0f));
 
-        // RENDERER FIX: Back to "Particles/Standard Unlit" which we know works in 3D space
-        // But explicitly assign our texture to fix the black squares
         var renderer = explosionObj.GetComponent<ParticleSystemRenderer>();
         renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
         renderer.material.mainTexture = GetSoftCircleTexture();
 
-        // Ensure particles are sorted correctly
         renderer.sortMode = ParticleSystemSortMode.Distance;
 
         ps.Play();
         Destroy(explosionObj, 2f);
+    }
+
+    private bool isBoosted = false;
+
+    public void Boost(Vector3 newDirection)
+    {
+        if (isBoosted) return;
+        isBoosted = true;
+
+        // Multiply Stats
+        damage *= 3f;
+        explosionRadius *= 2.5f;
+        speed *= 2.5f;
+
+        // Redirect
+        transform.forward = newDirection;
+        rb.linearVelocity = transform.forward * speed;
+
+        // Visuals (Change color to Blue/Cyan)
+        Renderer rend = GetComponent<Renderer>();
+        if (rend != null) rend.material.color = Color.cyan;
+
+        TrailRenderer trail = GetComponent<TrailRenderer>();
+        if (trail != null)
+        {
+            trail.startColor = Color.cyan;
+            trail.endColor = Color.white;
+            trail.widthMultiplier *= 2f;
+        }
+
+        Debug.Log("PROJETILE BOOST!");
     }
 
     Texture2D GetSoftCircleTexture()

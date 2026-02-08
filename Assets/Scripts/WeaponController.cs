@@ -15,6 +15,7 @@ public class WeaponController : MonoBehaviour
     public Transform playerCamera;
     public Transform firePoint;
     public GameObject fireballPrefab;
+    public WeaponPreviewManager previewManager;
 
     [Header("Stats")]
     public float fireRate = 0.5f;
@@ -34,9 +35,10 @@ public class WeaponController : MonoBehaviour
     public float punchDamage = 50f;
     public float punchRange = 3f;
     public float punchSelfDamage = 10f;
-    public float punchCooldown = 1f; 
+    public float punchCooldown = 0.5f; 
     public float punchVisualDuration = 0.5f; // Duration for the GIF to play
     public GameObject punchOverlay; 
+    public LayerMask aimLayerMask; 
 
     [Header("Weapon System")]
     public float spawnOffset = 1.0f;
@@ -44,6 +46,7 @@ public class WeaponController : MonoBehaviour
     public int currentWeaponIndex = 0;
 
     private float nextFireTime = 0f;
+    private float nextPunchTime = 0f;
 
     void Start()
     {
@@ -51,6 +54,12 @@ public class WeaponController : MonoBehaviour
         InitializeWeapons();
         LoadWeapons();
         
+        // Initial Preview Update
+        if (previewManager != null && weapons.Count > 0)
+        {
+            previewManager.UpdateModel(weapons[currentWeaponIndex].modelPrefab);
+        }
+
         if (punchOverlay != null) punchOverlay.SetActive(false);
     }
 // ...
@@ -123,12 +132,12 @@ public class WeaponController : MonoBehaviour
         }
 
         // Quick Melee (F Key)
-        if (Input.GetKeyDown(KeyCode.F) && Time.time >= nextFireTime)
+        if (Input.GetKeyDown(KeyCode.F) && Time.time >= nextPunchTime)
         {
              if (Time.timeScale == 0f) return;
              
              ShootPunch();
-             nextFireTime = Time.time + punchCooldown;
+             nextPunchTime = Time.time + punchCooldown;
         }
     }
 
@@ -160,6 +169,12 @@ public class WeaponController : MonoBehaviour
             {
                 currentWeaponIndex = nextIndex;
                 Debug.Log($"[Weapon] Switched to {weapons[currentWeaponIndex].name}");
+                
+                // Update 3D Preview
+                if (previewManager != null)
+                {
+                    previewManager.UpdateModel(weapons[currentWeaponIndex].modelPrefab);
+                }
                 return;
             }
         } while (nextIndex != originalIndex);
@@ -257,9 +272,32 @@ public class WeaponController : MonoBehaviour
             StartCoroutine(PunchFlashRoutine());
         }
 
-        // 2. Hitscan Attack
+        // 2. Projectile Boost (Check closely for Fireballs)
+        // Use SphereCast to be generous with aiming
+        RaycastHit[] hits = Physics.SphereCastAll(playerCamera.position, 1.0f, playerCamera.forward, punchRange, aimLayerMask);
+        bool hitProjectile = false;
+
+        foreach (var h in hits)
+        {
+            WickedFireball fireball = h.collider.GetComponent<WickedFireball>();
+            if (fireball != null)
+            {
+                // Align fireball to look where player is looking
+                // We use playerCamera.forward so it goes exactly where we aim
+                fireball.Boost(playerCamera.forward);
+                hitProjectile = true;
+            }
+        }
+
+        if (hitProjectile) 
+        {
+            // Optional: Add specific "Parry" sound or feedback here
+            return; // If we punched a projectile, maybe we don't punch the enemy too? Or maybe we DO? Let's return for now to emphasize the parry.
+        }
+
+        // 3. Hitscan Attack (Only if no projectile was boosted)
         RaycastHit hit;
-        if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, punchRange))
+        if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, punchRange, aimLayerMask))
         {
             GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
             if (enemy != null)
@@ -284,7 +322,7 @@ public class WeaponController : MonoBehaviour
         Vector3 targetPoint;
         
         // Raycast from center of screen
-        if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, 1000f))
+        if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, 1000f, aimLayerMask))
         {
             targetPoint = hit.point;
         }
@@ -303,7 +341,14 @@ public class WeaponController : MonoBehaviour
             Vector3 spawnPosition = firePoint.position + (direction * spawnOffset);
 
             // Instantiate and rotate to look at target
-            Instantiate(fireballPrefab, spawnPosition, Quaternion.LookRotation(direction));
+            GameObject fireballObj = Instantiate(fireballPrefab, spawnPosition, Quaternion.LookRotation(direction));
+            
+            // Initialize with player context for Smart Acceleration
+            WickedFireball wf = fireballObj.GetComponent<WickedFireball>();
+            if (wf != null)
+            {
+                wf.Initialize(transform, punchRange);
+            }
         }
     }
 
@@ -326,7 +371,7 @@ public class WeaponController : MonoBehaviour
         // Visual for the initial shot (Raycast logic)
         // We handle the FIRST segment here visually if we miss, otherwise pass control to runner
         
-        if (Physics.SphereCast(playerCamera.position, 1f, playerCamera.forward, out hit, lightningRange))
+        if (Physics.SphereCast(playerCamera.position, 1f, playerCamera.forward, out hit, lightningRange, aimLayerMask))
         {
             GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
             if (enemy != null) currentTarget = enemy.gameObject;

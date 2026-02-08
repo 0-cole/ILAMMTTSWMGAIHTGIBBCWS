@@ -124,9 +124,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05ddd1aa8c9593c419b6361cb7e425e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 30
+  speed: 15
   damage: 50
   lifetime: 5
+  slowStartDuration: 0.25
+  slowStartSpeed: 2
   createExplosionEffect: 1
   explosionRadius: 1.5
   particleCount: 30
