@@ -129,6 +129,7 @@ GameObject:
   - component: {fileID: 166865651}
   - component: {fileID: 166865653}
   - component: {fileID: 166865652}
+  - component: {fileID: 166865654}
   m_Layer: 0
   m_Name: WeaponStage
   m_TagString: Untagged
@@ -144,13 +145,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 166865650}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -100, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 181063450}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1811263389}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &166865652
 MonoBehaviour:
@@ -240,6 +241,22 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &166865654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166865650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a01f97cae853e4648a1565aa37b06fd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  previewStage: {fileID: 166865651}
+  spinSpeed: 30
+  modelScale: 10
+  rotationAxis: {x: 1, y: 1, z: 1}
 --- !u!1 &181063449
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,7 +267,6 @@ GameObject:
   m_Component:
   - component: {fileID: 181063450}
   - component: {fileID: 181063453}
-  - component: {fileID: 181063452}
   - component: {fileID: 181063451}
   m_Layer: 0
   m_Name: Camera
@@ -318,14 +334,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &181063452
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 181063449}
-  m_Enabled: 1
 --- !u!20 &181063453
 Camera:
   m_ObjectHideFlags: 0
@@ -335,8 +343,8 @@ Camera:
   m_GameObject: {fileID: 181063449}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -3167,6 +3175,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1811263389 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6706610844150544697, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+  m_PrefabInstance: {fileID: 2173785695920771774}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1878659303 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
@@ -3191,6 +3204,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 96436608866772127, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: previewManager
+      value: 
+      objectReference: {fileID: 166865654}
     - target: {fileID: 3995349868458964090, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
       propertyPath: weaponIcon
       value: 
@@ -3243,6 +3260,9 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 2448803375777763622, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6706610844150544697, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 166865651}
     - targetCorrespondingSourceObject: {fileID: 8381860481212181865, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
       insertIndex: -1
       addedObject: {fileID: 995422245}
@@ -3258,4 +3278,3 @@ SceneRoots:
   - {fileID: 1767714314}
   - {fileID: 358467480}
   - {fileID: 2173785695920771774}
-  - {fileID: 166865651}
