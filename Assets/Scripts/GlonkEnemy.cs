@@ -24,8 +24,14 @@ public class GlonkEnemy : MonoBehaviour
 
     private NavMeshAgent agent;
     private Transform playerTransform;
-    private PlayerHealth cachedPlayerHealth; // Cache to avoid GetComponent every attack
+    private PlayerHealth cachedPlayerHealth;
     private float nextPathUpdate;
+    private bool canSeePlayer;
+
+    [Header("Line of Sight")]
+    [SerializeField] private float losCheckInterval = 0.15f;
+    [SerializeField] private LayerMask losBlockingLayers; // Assign to walls/environment only
+    private float nextLosCheck;
 
     public System.Action<float, float> OnHealthChanged;
 
@@ -62,27 +68,29 @@ public class GlonkEnemy : MonoBehaviour
 
     void Update()
     {
-        if (playerTransform != null)
-        {
-            // Check if stunned (freeze after attack)
-            if (Time.time < stunEndTime)
-            {
-                // Stop the agent while stunned
-                if (agent.isOnNavMesh)
-                {
-                    agent.isStopped = true;
-                }
-                return; // Skip all movement/attack logic
-            }
-            else
-            {
-                // Resume movement if stun ended
-                if (agent.isOnNavMesh && agent.isStopped)
-                {
-                    agent.isStopped = false;
-                }
-            }
+        if (playerTransform == null) return;
 
+        // Periodic LOS check
+        if (Time.time >= nextLosCheck)
+        {
+            nextLosCheck = Time.time + losCheckInterval;
+            canSeePlayer = CheckLineOfSight();
+        }
+
+        // Check if stunned (freeze after attack)
+        if (Time.time < stunEndTime)
+        {
+            if (agent.isOnNavMesh) agent.isStopped = true;
+            return;
+        }
+        else
+        {
+            if (agent.isOnNavMesh && agent.isStopped) agent.isStopped = false;
+        }
+
+        // Only chase & attack if we can SEE the player
+        if (canSeePlayer)
+        {
             // AI Movement
             if (Time.time >= nextPathUpdate)
             {
@@ -93,18 +101,39 @@ public class GlonkEnemy : MonoBehaviour
                 }
             }
 
-            // Attack Logic (Distance Check because Collision is unreliable with NavMesh)
+            // Attack Logic
             float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
             if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
             {
                 if (cachedPlayerHealth != null)
                 {
                     cachedPlayerHealth.TakeDamage(damageOnContact);
-                    nextAttackTime = Time.time + 1.0f; // 1 second cooldown between hits
-                    stunEndTime = Time.time + stunDuration; // Stun after attacking!
+                    nextAttackTime = Time.time + 1.0f;
+                    stunEndTime = Time.time + stunDuration;
                 }
             }
         }
+        else
+        {
+            // Lost sight - stop moving
+            if (agent.isOnNavMesh) agent.isStopped = true;
+        }
+    }
+
+    bool CheckLineOfSight()
+    {
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        Vector3 target = playerTransform.position + Vector3.up * 0.5f;
+        Vector3 direction = target - origin;
+        float distance = direction.magnitude;
+
+        if (Physics.Raycast(origin, direction.normalized, out RaycastHit hit, distance, losBlockingLayers))
+        {
+            // Something is blocking the view
+            return false;
+        }
+        // Nothing blocked it - we can see the player
+        return true;
     }
 
     public void TakeDamage(float amount)
