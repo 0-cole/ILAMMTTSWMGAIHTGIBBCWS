@@ -6,6 +6,7 @@ public class WorldSpaceHealthBar : MonoBehaviour
     [Header("References")]
     [SerializeField] private Image healthFillImage;
     [SerializeField] private GlonkEnemy glonk;
+    [SerializeField] private BillboardShooter billboardShooter;
 
     [Header("Behavior")]
     [SerializeField] private bool billboard = true; // Always face camera
@@ -18,14 +19,18 @@ public class WorldSpaceHealthBar : MonoBehaviour
     {
         // Auto-find references if missing
         if (glonk == null) glonk = GetComponentInParent<GlonkEnemy>();
-        
-        // If still null, try finding in children (case dependent)
         if (glonk == null) glonk = GetComponentInChildren<GlonkEnemy>();
+
+        if (billboardShooter == null) billboardShooter = GetComponentInParent<BillboardShooter>();
+        if (billboardShooter == null) billboardShooter = GetComponentInChildren<BillboardShooter>();
 
         if (glonk != null)
         {
-            // Subscribe to health events
             glonk.OnHealthChanged += UpdateHealth;
+        }
+        else if (billboardShooter != null)
+        {
+            billboardShooter.OnHealthChanged += UpdateHealth;
         }
 
         mainCamera = Camera.main;
@@ -56,6 +61,10 @@ public class WorldSpaceHealthBar : MonoBehaviour
         if (glonk != null)
         {
             glonk.OnHealthChanged -= UpdateHealth;
+        }
+        if (billboardShooter != null)
+        {
+            billboardShooter.OnHealthChanged -= UpdateHealth;
         }
     }
 }

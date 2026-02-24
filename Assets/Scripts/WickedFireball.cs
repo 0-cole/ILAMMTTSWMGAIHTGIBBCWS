@@ -25,11 +25,13 @@ public class WickedFireball : MonoBehaviour
     private Transform playerTransform;
     private float punchRangeThreshold = 3f;
     private Vector3 launchDirection;
+    private bool isPlayerOwned = false;
 
     public void Initialize(Transform player, float range)
     {
         playerTransform = player;
         punchRangeThreshold = range * 1.2f; // Slight buffer
+        isPlayerOwned = true; // Flag this fireball as belonging to the player
     }
 
     IEnumerator Start()
@@ -112,12 +114,34 @@ public class WickedFireball : MonoBehaviour
         
         foreach (var hitCollider in hitColliders)
         {
+            // First check if we hit the player
+            PlayerHealth playerHealth = hitCollider.GetComponentInParent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                // Only damage the player if this fireball was shot by an enemy
+                if (!isPlayerOwned)
+                {
+                    Debug.Log($"[Fireball] Damaging Player");
+                    playerHealth.TakeDamage(damage);
+                }
+                continue; // Skip the glonk check to save processing
+            }
+
             // Search parent hierarchy - Glonk component might be on parent object
             GlonkEnemy glonk = hitCollider.GetComponentInParent<GlonkEnemy>();
             if (glonk != null)
             {
                 Debug.Log($"[Fireball] Damaging Glonk: {glonk.gameObject.name}");
                 glonk.TakeDamage(damage);
+                continue;
+            }
+
+            // Check if we hit a Billboard Enemy
+            BillboardShooter billboardShooter = hitCollider.GetComponentInParent<BillboardShooter>();
+            if (billboardShooter != null)
+            {
+                Debug.Log($"[Fireball] Damaging Billboard: {billboardShooter.gameObject.name}");
+                billboardShooter.TakeDamage(damage);
             }
         }
 
