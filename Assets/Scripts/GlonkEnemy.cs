@@ -28,6 +28,11 @@ public class GlonkEnemy : MonoBehaviour
     private float nextPathUpdate;
     private bool canSeePlayer;
 
+    // --- NavMesh Fallback ---
+    // If no NavMesh is baked on the current map, the enemy enters fallback mode:
+    // stands still, faces the player, and can still attack at melee range.
+    private bool navMeshAvailable = true;
+
     [Header("Line of Sight")]
     [SerializeField] private float losCheckInterval = 0.15f;
     [SerializeField] private LayerMask losBlockingLayers; // Assign to walls/environment only
@@ -53,9 +58,30 @@ public class GlonkEnemy : MonoBehaviour
             Debug.LogError("[Glonk] Could NOT find object with tag 'Player'! Please tag your player object.");
         }
 
-        if (!agent.isOnNavMesh)
+        // --- NavMesh Availability Check ---
+        // Use SamplePosition to verify there's actually a baked NavMesh nearby
+        NavMeshHit navHit;
+        if (!NavMesh.SamplePosition(transform.position, out navHit, 5f, NavMesh.AllAreas))
         {
-            Debug.LogError("[Glonk] Agent is NOT on the NavMesh! Is it baked? Is the floor blue?");
+            // No NavMesh found within 5 units — this map isn't baked
+            navMeshAvailable = false;
+            agent.enabled = false;
+            Debug.LogWarning($"[Glonk] No NavMesh found near {gameObject.name}! Entering fallback mode (stand & face). " +
+                             "Bake the NavMesh for this scene: Window → AI → Navigation → Bake.");
+        }
+        else if (!agent.isOnNavMesh)
+        {
+            // NavMesh exists but agent isn't on it — try warping to nearest valid point
+            if (agent.Warp(navHit.position))
+            {
+                Debug.LogWarning($"[Glonk] Agent wasn't on NavMesh, warped to nearest valid point.");
+            }
+            else
+            {
+                navMeshAvailable = false;
+                agent.enabled = false;
+                Debug.LogWarning($"[Glonk] Agent could not warp to NavMesh. Entering fallback mode.");
+            }
         }
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
@@ -76,6 +102,15 @@ public class GlonkEnemy : MonoBehaviour
             nextLosCheck = Time.time + losCheckInterval;
             canSeePlayer = CheckLineOfSight();
         }
+
+        // ---- FALLBACK MODE (no NavMesh) ----
+        if (!navMeshAvailable)
+        {
+            FallbackUpdate();
+            return;
+        }
+
+        // ---- NORMAL MODE (NavMesh available) ----
 
         // Check if stunned (freeze after attack)
         if (Time.time < stunEndTime)
@@ -120,6 +155,43 @@ public class GlonkEnemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Fallback behavior when no NavMesh is available:
+    /// Face the player and attack if they get close enough.
+    /// </summary>
+    void FallbackUpdate()
+    {
+        // Check if stunned
+        if (Time.time < stunEndTime) return;
+
+        if (canSeePlayer)
+        {
+            // Face the player (Y-axis rotation only)
+            Vector3 lookDir = playerTransform.position - transform.position;
+            lookDir.y = 0;
+            if (lookDir.sqrMagnitude > 0.01f)
+            {
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    Quaternion.LookRotation(lookDir),
+                    Time.deltaTime * 5f
+                );
+            }
+
+            // Attack if close enough
+            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+            if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
+            {
+                if (cachedPlayerHealth != null)
+                {
+                    cachedPlayerHealth.TakeDamage(damageOnContact);
+                    nextAttackTime = Time.time + 1.0f;
+                    stunEndTime = Time.time + stunDuration;
+                }
+            }
+        }
+    }
+
     bool CheckLineOfSight()
     {
         Vector3 origin = transform.position + Vector3.up * 0.5f;
@@ -142,7 +214,7 @@ public class GlonkEnemy : MonoBehaviour
         
         currentHealth -= amount;
         
-        if (agent.enabled && agent.isOnNavMesh)
+        if (navMeshAvailable && agent.enabled && agent.isOnNavMesh)
         {
             agent.velocity = Vector3.zero;
         }

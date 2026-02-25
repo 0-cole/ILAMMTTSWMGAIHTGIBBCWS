@@ -19,7 +19,6 @@ public class MouseLook : MonoBehaviour
     private Vector2 currentMouseDeltaVelocity;
     
 
-
     void Start()
     {
         // Get reference to parent (player body)
@@ -28,6 +27,33 @@ public class MouseLook : MonoBehaviour
         if (playerBody == null)
         {
             Debug.LogError("MouseLook: Camera must be a child of the Player object!");
+        }
+
+        // Subscribe to settings changes
+        if (GameSettings.Instance != null)
+        {
+            GameSettings.Instance.OnSettingsChanged += ApplySettings;
+            ApplySettings();
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (GameSettings.Instance != null)
+        {
+            GameSettings.Instance.OnSettingsChanged -= ApplySettings;
+        }
+    }
+
+    /// <summary>
+    /// Pull sensitivity from GameSettings when settings change.
+    /// </summary>
+    void ApplySettings()
+    {
+        if (GameSettings.Instance != null)
+        {
+            sensitivityX = GameSettings.Instance.Sensitivity;
+            sensitivityY = GameSettings.Instance.Sensitivity;
         }
     }
     

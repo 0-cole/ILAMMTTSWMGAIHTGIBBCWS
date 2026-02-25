@@ -10,18 +10,32 @@ public class UnlockNotification : MonoBehaviour
     [SerializeField] private TextMeshProUGUI unlockText;
     [SerializeField] private Image flashOverlay;
 
-    [Header("Settings")]
+    [Header("Timing")]
     [SerializeField] private float displayDuration = 3f;
     [SerializeField] private float fadeSpeed = 5f;
+    [SerializeField] private float slideSpeed = 8f;
+    
+    [Header("Slide Animation")]
+    [SerializeField] private float slideDistance = 80f; // Pixels to slide in from
+    
+    [Header("3D Settings")]
+    [SerializeField] private Transform modelSpawnPoint;
+    [SerializeField] private float modelSpinSpeed = 90f;
+    [SerializeField] private float modelScale = 100f;
     
     private float timer;
     private bool isShowing;
+    private GameObject currentModelObject;
+    private RectTransform rectTransform;
+    private Vector2 targetPosition;
+    private Vector2 hiddenPosition;
 
     public static UnlockNotification Instance;
 
     void Awake()
     {
         Instance = this;
+        rectTransform = notificationGroup?.GetComponent<RectTransform>();
     }
 
     void Start()
@@ -33,19 +47,21 @@ public class UnlockNotification : MonoBehaviour
             c.a = 0f;
             flashOverlay.color = c;
         }
-    }
 
-    [Header("3D Settings")]
-    [SerializeField] private Transform modelSpawnPoint; // Where to spawn the 3D book
-    [SerializeField] private float modelSpinSpeed = 90f;
-    [SerializeField] private float modelScale = 100f; // Scale up for UI
-    
-    private GameObject currentModelObject;
+        // Store positions for slide animation
+        if (rectTransform != null)
+        {
+            targetPosition = rectTransform.anchoredPosition;
+            hiddenPosition = targetPosition + new Vector2(0, slideDistance);
+            rectTransform.anchoredPosition = hiddenPosition;
+        }
+    }
 
     public void ShowUnlock(string weaponName, Sprite icon = null, GameObject modelPrefab = null, string subtitle = "")
     {
         if (notificationGroup == null) return;
 
+        // Build styled text
         string mainText = $"UNLOCKED\n<color=yellow>{weaponName.ToUpper()}</color>";
         if (!string.IsNullOrEmpty(subtitle))
         {
@@ -61,26 +77,27 @@ public class UnlockNotification : MonoBehaviour
         }
 
         // Handle 3D Model
-        if (currentModelObject != null) Destroy(currentModelObject);
+        CleanupModel();
         
         if (modelPrefab != null && modelSpawnPoint != null)
         {
             currentModelObject = Instantiate(modelPrefab, modelSpawnPoint);
             currentModelObject.transform.localPosition = Vector3.zero;
             currentModelObject.transform.localRotation = Quaternion.identity;
-            
-            // Set scale (might need adjustment based on the asset)
             currentModelObject.transform.localScale = Vector3.one * modelScale; 
-            
-            // Ensure it renders on top of UI if using Screen Space Camera, 
-            // otherwise for Overlay it might look weird without a special shader, 
-            // but we'll assume standard setup for now.
             SetLayerRecursively(currentModelObject, LayerMask.NameToLayer("UI")); 
         }
 
+        // Start showing
         isShowing = true;
         timer = displayDuration;
         notificationGroup.alpha = 1f;
+
+        // Slide in from above
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = hiddenPosition;
+        }
 
         // Flash Effect
         if (flashOverlay != null)
@@ -91,9 +108,18 @@ public class UnlockNotification : MonoBehaviour
         }
     }
 
+    void CleanupModel()
+    {
+        if (currentModelObject != null)
+        {
+            Destroy(currentModelObject);
+            currentModelObject = null;
+        }
+    }
+
     void SetLayerRecursively(GameObject obj, int newLayer)
     {
-        if (newLayer < 0) return; // Invalid layer
+        if (newLayer < 0) return;
         obj.layer = newLayer;
         foreach (Transform child in obj.transform)
         {
@@ -103,21 +129,30 @@ public class UnlockNotification : MonoBehaviour
 
     void Update()
     {
-        // specific rotation logic
+        // Spin 3D model
         if (currentModelObject != null)
         {
             currentModelObject.transform.Rotate(Vector3.up, modelSpinSpeed * Time.deltaTime);
         }
 
-        // Fade out flash
+        // Fade out flash overlay
         if (flashOverlay != null && flashOverlay.color.a > 0)
         {
             Color c = flashOverlay.color;
             c.a = Mathf.Lerp(c.a, 0f, Time.deltaTime * 10f);
+            if (c.a < 0.01f) c.a = 0f;
             flashOverlay.color = c;
         }
 
-        // Handle Notification Display
+        // Slide animation
+        if (rectTransform != null)
+        {
+            Vector2 goal = isShowing ? targetPosition : hiddenPosition;
+            rectTransform.anchoredPosition = Vector2.Lerp(
+                rectTransform.anchoredPosition, goal, Time.deltaTime * slideSpeed);
+        }
+
+        // Handle notification timer
         if (isShowing)
         {
             timer -= Time.deltaTime;
@@ -129,6 +164,13 @@ public class UnlockNotification : MonoBehaviour
         else if (notificationGroup != null && notificationGroup.alpha > 0)
         {
             notificationGroup.alpha -= Time.deltaTime * fadeSpeed;
+
+            // Cleanup model once fully faded
+            if (notificationGroup.alpha <= 0)
+            {
+                notificationGroup.alpha = 0f;
+                CleanupModel();
+            }
         }
     }
 }

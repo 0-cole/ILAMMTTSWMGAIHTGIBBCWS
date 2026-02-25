@@ -4,8 +4,12 @@ using UnityEngine.SceneManagement;
 public class PauseManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private GameObject pauseMenuUI;
+    [SerializeField] private GameObject pauseCanvas;    // The entire pause menu canvas (root)
+    [SerializeField] private GameObject pauseMenuUI;    // Just the pause buttons panel
     [SerializeField] private CursorManager cursorManager;
+
+    [Header("Settings Integration")]
+    [SerializeField] private SettingsMenu settingsMenu;
 
     public static bool IsGamePaused = false;
 
@@ -15,16 +19,23 @@ public class PauseManager : MonoBehaviour
             cursorManager = FindFirstObjectByType<CursorManager>();
 
         // Ensure menu is closed on start
-        if (pauseMenuUI != null)
-            pauseMenuUI.SetActive(false);
+        if (pauseCanvas != null)
+            pauseCanvas.SetActive(false);
             
-        Resume(); // Ensure time is running
+        Resume();
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            // If settings are open, close them first
+            if (settingsMenu != null && settingsMenu.settingsPanel != null && settingsMenu.settingsPanel.activeSelf)
+            {
+                CloseSettings();
+                return;
+            }
+
             if (IsGamePaused)
             {
                 Resume();
@@ -38,7 +49,7 @@ public class PauseManager : MonoBehaviour
 
     public void Resume()
     {
-        if (pauseMenuUI != null) pauseMenuUI.SetActive(false);
+        if (pauseCanvas != null) pauseCanvas.SetActive(false);
         Time.timeScale = 1f;
         IsGamePaused = false;
         
@@ -47,11 +58,39 @@ public class PauseManager : MonoBehaviour
 
     public void Pause()
     {
+        if (pauseCanvas != null) pauseCanvas.SetActive(true);
         if (pauseMenuUI != null) pauseMenuUI.SetActive(true);
+        // Hide settings if they were somehow left open
+        if (settingsMenu != null && settingsMenu.settingsPanel != null)
+            settingsMenu.settingsPanel.SetActive(false);
+
         Time.timeScale = 0f;
         IsGamePaused = true;
         
         if (cursorManager != null) cursorManager.UnlockCursor();
+    }
+
+    public void OpenSettings()
+    {
+        if (settingsMenu != null)
+        {
+            // Hide pause buttons, keep canvas active, show settings
+            if (pauseMenuUI != null) pauseMenuUI.SetActive(false);
+            settingsMenu.Open();
+        }
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsMenu != null) settingsMenu.Close();
+        if (pauseMenuUI != null) pauseMenuUI.SetActive(true);
+    }
+
+    public void ReturnToMainMenu()
+    {
+        Time.timeScale = 1f;
+        IsGamePaused = false;
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void QuitGame()
@@ -66,7 +105,7 @@ public class PauseManager : MonoBehaviour
     public void WipeData()
     {
         PlayerPrefs.DeleteAll();
-        Time.timeScale = 1f; // Must be 1 to reload properly
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
