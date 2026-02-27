@@ -14,9 +14,16 @@ public class PlayerHealth : MonoBehaviour
     // Events for UI updates
     public System.Action<float, float> OnHealthChanged;
 
+    private CameraShake cameraShake;
+
     void Start()
     {
         currentHealth = maxHealth;
+
+        // Auto-find CameraShake on main camera
+        if (Camera.main != null)
+            cameraShake = Camera.main.GetComponent<CameraShake>();
+
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
@@ -29,6 +36,10 @@ public class PlayerHealth : MonoBehaviour
         lastDamageTime = Time.time;
         currentHealth -= amount;
         currentHealth = Mathf.Max(currentHealth, 0);
+
+        // Screen shake on damage
+        if (cameraShake != null)
+            cameraShake.Shake();
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 

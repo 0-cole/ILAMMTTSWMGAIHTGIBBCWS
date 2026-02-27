@@ -1,10 +1,13 @@
 using UnityEngine;
 
-public class BillboardShooter : MonoBehaviour
+public class BillboardShooter : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
     [SerializeField] private float maxHealth = 60f;
     [SerializeField] private float currentHealth;
+
+    public float CurrentHealth => currentHealth;
+    public bool IsDead => isDead;
 
     [Header("Shooting")]
     [SerializeField] private GameObject fireballPrefab; // Reuse WickedFireball prefab
@@ -29,6 +32,16 @@ public class BillboardShooter : MonoBehaviour
     private Camera mainCamera;
 
     public System.Action<float, float> OnHealthChanged;
+
+    /// <summary>
+    /// Public initializer so spawners can set dependencies without reflection.
+    /// </summary>
+    public void Initialize(GameObject fireball, GameObject healthPickup, GameObject manaPickup)
+    {
+        fireballPrefab = fireball;
+        healthPickupPrefab = healthPickup;
+        manaPickupPrefab = manaPickup;
+    }
 
     void Start()
     {

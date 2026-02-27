@@ -25,11 +25,15 @@ public class ViewBob : MonoBehaviour
     [Header("FOV Compensation")]
     [Tooltip("FOV at which the weapon was originally positioned.")]
     [SerializeField] private float referenceFOV = 60f;
+    [Tooltip("How much the weapon scale compensates for FOV changes. 0 = no scaling, 1 = full compensation.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float fovScaleStrength = 0.4f;
 
     [Header("References")]
     [SerializeField] private CharacterController characterController;
 
     private Vector3 weaponOriginalPosition; // The position set in the editor at referenceFOV
+    private Vector3 weaponOriginalScale;    // The scale set in the editor at referenceFOV
     private float bobTimer;
     private bool viewBobEnabled = true;
     private bool initialized;
@@ -73,6 +77,7 @@ public class ViewBob : MonoBehaviour
         if (weaponTransform != null)
         {
             weaponOriginalPosition = weaponTransform.localPosition;
+            weaponOriginalScale = weaponTransform.localScale;
             Debug.Log($"[ViewBob] Attached to weapon: {weaponTransform.name}");
         }
         else
@@ -162,5 +167,15 @@ public class ViewBob : MonoBehaviour
 
         // --- 4. Apply: base position + bob offset ---
         weaponTransform.localPosition = basePos + currentBobOffset;
+
+        // --- 5. FOV-based scale compensation ---
+        // Partially scale the weapon so it doesn't shrink too much at high FOV
+        if (cam != null && referenceFOV > 0f)
+        {
+            float rawScale = Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad)
+                           / Mathf.Tan(referenceFOV * 0.5f * Mathf.Deg2Rad);
+            float fovScale = Mathf.Lerp(1f, rawScale, fovScaleStrength);
+            weaponTransform.localScale = weaponOriginalScale * fovScale;
+        }
     }
 }

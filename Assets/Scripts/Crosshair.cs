@@ -56,8 +56,12 @@ public class Crosshair : MonoBehaviour
         dotImage.sprite = CreateCircleSprite();
     }
 
+    private static Sprite cachedCircleSprite;
+
     Sprite CreateCircleSprite()
     {
+        if (cachedCircleSprite != null) return cachedCircleSprite;
+
         // Create a simple circle texture
         int resolution = 64;
         Texture2D texture = new Texture2D(resolution, resolution);
@@ -91,7 +95,8 @@ public class Crosshair : MonoBehaviour
         
         texture.Apply();
         
-        return Sprite.Create(texture, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f));
+        cachedCircleSprite = Sprite.Create(texture, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f));
+        return cachedCircleSprite;
     }
 
     public void SetColor(Color color)

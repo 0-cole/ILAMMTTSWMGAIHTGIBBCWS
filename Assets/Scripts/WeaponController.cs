@@ -299,10 +299,10 @@ public class WeaponController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, punchRange, aimLayerMask))
         {
-            GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
-            if (enemy != null)
+            IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
+            if (damageable != null)
             {
-                enemy.TakeDamage(punchDamage);
+                damageable.TakeDamage(punchDamage);
                 Debug.Log("PUNCH HIT!");
             }
         }
@@ -310,6 +310,20 @@ public class WeaponController : MonoBehaviour
 
     System.Collections.IEnumerator PunchFlashRoutine()
     {
+        // Scale punch overlay based on FOV so it fills the same screen area
+        if (playerCamera != null)
+        {
+            Camera cam = playerCamera.GetComponent<Camera>();
+            if (cam != null)
+            {
+                float referenceFOV = 60f;
+                float fovScaleStrength = 0.4f;
+                float rawScale = Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad)
+                               / Mathf.Tan(referenceFOV * 0.5f * Mathf.Deg2Rad);
+                float fovScale = Mathf.Lerp(1f, rawScale, fovScaleStrength);
+                punchOverlay.transform.localScale = Vector3.one * fovScale;
+            }
+        }
         punchOverlay.SetActive(true);
         yield return new WaitForSeconds(punchVisualDuration);
         punchOverlay.SetActive(false);
@@ -373,8 +387,8 @@ public class WeaponController : MonoBehaviour
         
         if (Physics.SphereCast(playerCamera.position, 1f, playerCamera.forward, out hit, lightningRange, aimLayerMask))
         {
-            GlonkEnemy enemy = hit.collider.GetComponentInParent<GlonkEnemy>();
-            if (enemy != null) currentTarget = enemy.gameObject;
+            IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
+            if (damageable != null) currentTarget = damageable.transform.gameObject;
         }
 
         if (currentTarget == null)
@@ -384,14 +398,14 @@ public class WeaponController : MonoBehaviour
             float closestDist = Mathf.Infinity;
             foreach (var col in colliders)
             {
-                GlonkEnemy enemy = col.GetComponentInParent<GlonkEnemy>();
-                if (enemy != null)
+                IDamageable damageable = col.GetComponentInParent<IDamageable>();
+                if (damageable != null)
                 {
-                    float d = Vector3.Distance(playerCamera.position, enemy.transform.position);
+                    float d = Vector3.Distance(playerCamera.position, damageable.transform.position);
                     if (d < closestDist)
                     {
                         closestDist = d;
-                        currentTarget = enemy.gameObject;
+                        currentTarget = damageable.transform.gameObject;
                     }
                 }
             }

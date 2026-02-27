@@ -2,11 +2,14 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class GlonkEnemy : MonoBehaviour
+public class GlonkEnemy : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private float currentHealth;
+
+    public float CurrentHealth => currentHealth;
+    public bool IsDead => isDead;
     
     [Header("AI Settings")]
     [SerializeField] private float damageOnContact = 10f;
@@ -259,18 +262,6 @@ public class GlonkEnemy : MonoBehaviour
         {
             Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-1f, 1f)).normalized;
             rb.AddForce(randomDirection * pickupSpawnForce, ForceMode.Impulse);
-        }
-    }
-    
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
-            if (playerHealth != null)
-            {
-                playerHealth.TakeDamage(damageOnContact);
-            }
         }
     }
 }

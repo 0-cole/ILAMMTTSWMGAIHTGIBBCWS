@@ -26,11 +26,13 @@ public class GlonkSpawner : MonoBehaviour
             Invoke("SpawnGlonk", respawnDelay);
         }
 
-        // DEBUG: Summon the Horde (Press T)
+        // DEBUG: Summon the Horde (Press T) — editor only
+#if UNITY_EDITOR
         if (Input.GetKeyDown(KeyCode.T))
         {
             SummonHorde(30);
         }
+#endif
     }
 
     void SpawnGlonk()

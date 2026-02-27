@@ -54,12 +54,12 @@ public class ChainLightningRunner : MonoBehaviour
 
             // Register Hit & Damage
             hitEnemies.Add(currentTarget);
-            GlonkEnemy enemyScript = currentTarget.GetComponentInParent<GlonkEnemy>();
+            IDamageable damageable = currentTarget.GetComponentInParent<IDamageable>();
             
             // Allow damage to happen even if it kills them immediately
-            if (enemyScript != null)
+            if (damageable != null)
             {
-                enemyScript.TakeDamage(damage);
+                damageable.TakeDamage(damage);
                 SpawnSmite(currentTarget.transform.position);
             }
 
@@ -87,14 +87,14 @@ public class ChainLightningRunner : MonoBehaviour
 
             foreach (var col in potentialTargets)
             {
-                GlonkEnemy enemy = col.GetComponentInParent<GlonkEnemy>();
-                if (enemy != null && !hitEnemies.Contains(enemy.gameObject))
+                IDamageable nextDamageable = col.GetComponentInParent<IDamageable>();
+                if (nextDamageable != null && !hitEnemies.Contains(nextDamageable.transform.gameObject))
                 {
-                    float d = Vector3.Distance(currentPosition, enemy.transform.position);
+                    float d = Vector3.Distance(currentPosition, nextDamageable.transform.position);
                     if (d < closestNextDist)
                     {
                         closestNextDist = d;
-                        nextTarget = enemy.gameObject;
+                        nextTarget = nextDamageable.transform.gameObject;
                     }
                 }
             }

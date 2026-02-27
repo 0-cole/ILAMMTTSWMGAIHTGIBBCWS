@@ -55,6 +55,52 @@ public class MainMenuBuilder : Editor
         scaler.matchWidthOrHeight = 0.5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
+        // 5.5 Custom Title Background
+        GameObject bgObj = new GameObject("BackgroundTitle");
+        bgObj.transform.SetParent(canvasObj.transform, false);
+        RectTransform bgRt = bgObj.AddComponent<RectTransform>();
+        bgRt.anchorMin = Vector2.zero;
+        bgRt.anchorMax = Vector2.one;
+        bgRt.sizeDelta = Vector2.zero;
+        Image bgImg = bgObj.AddComponent<Image>();
+        
+        string spritePath = "Assets/Sprites/CustomTitleScreen.png";
+        
+        // Ensure Unity recognizes the file if it was just copied
+        AssetDatabase.ImportAsset(spritePath, ImportAssetOptions.ForceUpdate);
+        
+        TextureImporter importer = AssetImporter.GetAtPath(spritePath) as TextureImporter;
+        if (importer != null)
+        {
+            bool needsReimport = false;
+            if (importer.textureType != TextureImporterType.Sprite)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                needsReimport = true;
+            }
+            if (importer.spriteImportMode != SpriteImportMode.Single)
+            {
+                importer.spriteImportMode = SpriteImportMode.Single;
+                needsReimport = true;
+            }
+            if (needsReimport)
+            {
+                importer.SaveAndReimport();
+            }
+        }
+        
+        // Load the sprite robustly by iterating over all assets at path
+        Object[] assets = AssetDatabase.LoadAllAssetsAtPath(spritePath);
+        foreach (var asset in assets)
+        {
+            if (asset is Sprite s)
+            {
+                bgImg.sprite = s;
+                bgImg.preserveAspect = true;
+                break;
+            }
+        }
+
         // 6. MainMenu controller
         GameObject menuController = new GameObject("MainMenuController");
         MainMenu mainMenu = menuController.AddComponent<MainMenu>();
@@ -62,35 +108,32 @@ public class MainMenuBuilder : Editor
         // ==========================================
         // MAIN PANEL
         // ==========================================
-        GameObject mainPanel = CreatePanel(canvasObj.transform, "MainPanel", Vector2.zero, new Vector2(600, 700));
+        GameObject mainPanel = CreatePanel(canvasObj.transform, "MainPanel", new Vector2(-50, 50), new Vector2(400, 400));
+        RectTransform mainPanelRt = mainPanel.GetComponent<RectTransform>();
+        mainPanelRt.anchorMin = new Vector2(1f, 0f);
+        mainPanelRt.anchorMax = new Vector2(1f, 0f);
+        mainPanelRt.pivot = new Vector2(1f, 0f);
         mainMenu.mainPanel = mainPanel;
-
-        // Title
-        CreateText(mainPanel.transform, "TitleText", "ILAMMTTSWMGAIHTGIBBCWS",
-            new Vector2(0, 220), new Vector2(560, 80), 28, accentRed, FontStyles.Bold, TextAlignmentOptions.Center);
-
-        // Subtitle
-        CreateText(mainPanel.transform, "SubtitleText", "-- PREPARE TO ENTER --",
-            new Vector2(0, 170), new Vector2(400, 40), 16, subtleGray, FontStyles.Italic, TextAlignmentOptions.Center);
 
         // Play Button
         GameObject playBtn = CreateButton(mainPanel.transform, "PlayButton", "> PLAY",
-            new Vector2(0, 60), new Vector2(350, 65), accentRed, textWhite, 24);
+            new Vector2(0, 80), new Vector2(350, 65), accentRed, textWhite, 24);
+        playBtn.AddComponent<RainbowColor>();
         playBtn.GetComponent<Button>().onClick.AddListener(() => { });
 
         // Settings Button
         GameObject settingsBtn = CreateButton(mainPanel.transform, "SettingsButton", "SETTINGS",
-            new Vector2(0, -20), new Vector2(350, 65), panelColor, textWhite, 22);
+            new Vector2(0, 0), new Vector2(350, 65), panelColor, textWhite, 22);
         settingsBtn.GetComponent<Button>().onClick.AddListener(() => { });
 
         // Quit Button
         GameObject quitBtn = CreateButton(mainPanel.transform, "QuitButton", "QUIT",
-            new Vector2(0, -100), new Vector2(350, 65), panelColor, accentRed, 22);
+            new Vector2(0, -80), new Vector2(350, 65), panelColor, accentRed, 22);
         quitBtn.GetComponent<Button>().onClick.AddListener(() => { });
 
         // Version text
         CreateText(mainPanel.transform, "VersionText", "v0.1 - Alpha Build",
-            new Vector2(0, -260), new Vector2(300, 30), 12, subtleGray, FontStyles.Normal, TextAlignmentOptions.Center);
+            new Vector2(0, -160), new Vector2(300, 30), 12, subtleGray, FontStyles.Normal, TextAlignmentOptions.Center);
 
         // ==========================================
         // LEVEL SELECT PANEL

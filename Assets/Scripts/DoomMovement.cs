@@ -14,6 +14,11 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float jumpHeight = 2f;
     [SerializeField] private float gravity = 20f;
     
+    [Header("Double Jump")]
+    [SerializeField] private float doubleJumpMultiplier = 0.5f;
+    private int jumpCount = 0;
+    private const int maxJumps = 2;
+
     [Header("Air Control")]
     [SerializeField] private float airControl = 0.3f;
 
@@ -57,15 +62,23 @@ public class DoomMovement : MonoBehaviour
         {
             GroundMove(inputDirection, sprint);
             
-            // Jump
+            // Ground Jump (auto-hop with GetButton)
             if (jump)
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * gravity);
+                jumpCount = 1;
             }
         }
         else
         {
             AirMove(inputDirection);
+
+            // Double Jump (GetButtonDown to prevent auto-double-jump)
+            if (Input.GetButtonDown("Jump") && jumpCount < maxJumps && !isWallSticking)
+            {
+                velocity.y = Mathf.Sqrt(2f * jumpHeight * doubleJumpMultiplier * gravity);
+                jumpCount = maxJumps;
+            }
         }
         
         // Apply gravity (if not sticking)
@@ -111,6 +124,7 @@ public class DoomMovement : MonoBehaviour
         {
             velocity.y = -2f; // Small downward force to keep grounded
             isWallSticking = false; // Reset wall stick on ground
+            jumpCount = 0; // Reset double jump
         }
     }
     

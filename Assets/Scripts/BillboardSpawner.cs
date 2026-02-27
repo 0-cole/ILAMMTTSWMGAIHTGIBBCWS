@@ -85,16 +85,7 @@ public class BillboardSpawner : MonoBehaviour
 
         // 6. Add Shooter logic
         BillboardShooter shooter = currentBillboardEnemy.AddComponent<BillboardShooter>();
-        var fieldFlags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
-        
-        var fbField = shooter.GetType().GetField("fireballPrefab", fieldFlags);
-        if (fbField != null) fbField.SetValue(shooter, fireballPrefab);
-        
-        var hpField = shooter.GetType().GetField("healthPickupPrefab", fieldFlags);
-        if (hpField != null) hpField.SetValue(shooter, healthOrbPrefab);
-
-        var mpField = shooter.GetType().GetField("manaPickupPrefab", fieldFlags);
-        if (mpField != null) mpField.SetValue(shooter, manaOrbPrefab);
+        shooter.Initialize(fireballPrefab, healthOrbPrefab, manaOrbPrefab);
 
         // 7. Add Health Bar
         if (glonkPrefab != null)
@@ -109,7 +100,8 @@ public class BillboardSpawner : MonoBehaviour
                 WorldSpaceHealthBar healthBarObj = canvasCopy.GetComponent<WorldSpaceHealthBar>();
                 if (healthBarObj != null)
                 {
-                    var billboardField = healthBarObj.GetType().GetField("billboard", fieldFlags);
+                    var billboardField = healthBarObj.GetType().GetField("billboard",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                     if (billboardField != null) billboardField.SetValue(healthBarObj, true);
                 }
             }
