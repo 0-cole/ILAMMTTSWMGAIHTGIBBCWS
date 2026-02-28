@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// Place this on a trigger collider. When the player enters for the first time,
 /// it spawns all EnemySpawnPoints with a matching spawnGroupId, then destroys itself.
+/// Optionally plays an ULTRAKILL-style encounter intro before spawning.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class SpawnTrigger : MonoBehaviour
@@ -20,6 +21,10 @@ public class SpawnTrigger : MonoBehaviour
     [Tooltip("Optional: destroy after this delay to let particles finish")]
     public float selfDestroyDelay = 0.5f;
 
+    [Header("Encounter Intro")]
+    [Tooltip("Optional: assign an EncounterIntro to play a cinematic text intro before spawning")]
+    public EncounterIntro encounterIntro;
+
     private bool triggered = false;
 
     void Start()
@@ -35,7 +40,23 @@ public class SpawnTrigger : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         triggered = true;
-        StartCoroutine(SpawnSequence());
+
+        if (encounterIntro != null)
+        {
+            // Get audio sources from LevelMusicManager
+            AudioSource ambience = LevelMusicManager.Instance != null ? LevelMusicManager.Instance.AmbienceSource : null;
+            AudioSource combat = LevelMusicManager.Instance != null ? LevelMusicManager.Instance.CombatSource : null;
+
+            // Play intro, then spawn enemies when it finishes
+            encounterIntro.PlayIntro(ambience, combat, () =>
+            {
+                StartCoroutine(SpawnSequence());
+            });
+        }
+        else
+        {
+            StartCoroutine(SpawnSequence());
+        }
     }
 
     private IEnumerator SpawnSequence()
@@ -63,7 +84,7 @@ public class SpawnTrigger : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
+        Gizmos.color = encounterIntro != null ? new Color(1f, 0.5f, 0f, 0.3f) : new Color(0f, 1f, 0f, 0.3f);
         Collider col = GetComponent<Collider>();
         if (col is BoxCollider box)
         {
@@ -78,8 +99,10 @@ public class SpawnTrigger : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        UnityEditor.Handles.Label(transform.position + Vector3.up * 2f,
-            $"Spawn Trigger (Group {spawnGroupId})");
+        string label = encounterIntro != null
+            ? $"Spawn Trigger (Group {spawnGroupId}) [ENCOUNTER]"
+            : $"Spawn Trigger (Group {spawnGroupId})";
+        UnityEditor.Handles.Label(transform.position + Vector3.up * 2f, label);
 #endif
     }
 }
