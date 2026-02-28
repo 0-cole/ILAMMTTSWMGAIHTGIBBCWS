@@ -85,7 +85,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 4.33, y: 5.77}
+  m_Size: {x: 13.82, y: 6.4}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -176,6 +176,8 @@ MonoBehaviour:
   detectionRange: 25
   spawnOffset: 1.2
   deathEffect: {fileID: 0}
+  deathGrunt: {fileID: 8300000, guid: 48d89acf7c3c27546ba06468f035b35b, type: 3}
+  attackGrunt: {fileID: 8300000, guid: 5bb0d15568fa56144b9fc0374b5fa4a6, type: 3}
   healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
   manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
   healthDropChance: 0.4

@@ -4,8 +4,7 @@ using UnityEngine.Video;
 
 /// <summary>
 /// Plays a pre-made visualizer video on a RawImage at the top of the screen.
-/// The video should be a looping visualizer (bars, etc.) rendered upside down
-/// or flipped via RectTransform scale.
+/// Renders above the intro splash so it's visible during the intro sequence.
 /// 
 /// Setup:
 /// 1. Create a RawImage in your Canvas, anchored to the top, stretched width
@@ -20,7 +19,7 @@ public class VideoVisualizer : MonoBehaviour
     [SerializeField] private VideoClip visualizerClip;
 
     [Header("Fade")]
-    [SerializeField] private float fadeDuration = 5f;
+    [SerializeField] private float fadeDuration = 5.5f;
 
     private RawImage rawImage;
     private VideoPlayer videoPlayer;
@@ -32,20 +31,32 @@ public class VideoVisualizer : MonoBehaviour
         rawImage = GetComponent<RawImage>();
         rawImage.color = new Color(1f, 1f, 1f, 0f); // Start transparent
 
+        // Render above the IntroSplash canvas (sort order 999)
+        var canvasOverride = gameObject.AddComponent<Canvas>();
+        canvasOverride.overrideSorting = true;
+        canvasOverride.sortingOrder = 1000;
+
         // Create render texture
         renderTexture = new RenderTexture(1920, 1080, 0);
         renderTexture.Create();
 
-        // Setup video player
-        videoPlayer = gameObject.AddComponent<VideoPlayer>();
+        // Setup video player — reuse existing or create new
+        videoPlayer = GetComponent<VideoPlayer>();
+        if (videoPlayer == null)
+            videoPlayer = gameObject.AddComponent<VideoPlayer>();
+
         videoPlayer.clip = visualizerClip;
         videoPlayer.renderMode = VideoRenderMode.RenderTexture;
         videoPlayer.targetTexture = renderTexture;
         videoPlayer.isLooping = true;
-        videoPlayer.audioOutputMode = VideoAudioOutputMode.None; // Music handled separately
         videoPlayer.playOnAwake = false;
-        videoPlayer.Play();
 
+        // Fully mute video audio — music is handled by TitleScreenMusic
+        videoPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
+        for (ushort i = 0; i < 16; i++)
+            videoPlayer.SetDirectAudioMute(i, true);
+
+        videoPlayer.Play();
         rawImage.texture = renderTexture;
     }
 

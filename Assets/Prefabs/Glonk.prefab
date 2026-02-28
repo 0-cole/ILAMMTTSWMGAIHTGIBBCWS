@@ -117,6 +117,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthFillImage: {fileID: 2363453155956267212}
   glonk: {fileID: 825942605466942307}
+  billboardShooter: {fileID: 0}
   billboard: 1
   smoothSpeed: 10
 --- !u!1 &6210821214113953419
@@ -324,12 +325,18 @@ MonoBehaviour:
   damageOnContact: 10
   updatePathInterval: 0.2
   deathEffect: {fileID: 0}
+  deathGrunt: {fileID: 8300000, guid: 48d89acf7c3c27546ba06468f035b35b, type: 3}
   healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
   manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
   healthDropChance: 0.3
   manaDropChance: 0.5
   pickupSpawnForce: 3
+  losCheckInterval: 0.15
+  losBlockingLayers:
+    serializedVersion: 2
+    m_Bits: 0
   attackRange: 1.5
+  stunDuration: 1
 --- !u!195 &7283346487723007959
 NavMeshAgent:
   m_ObjectHideFlags: 0
