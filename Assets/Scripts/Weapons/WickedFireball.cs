@@ -367,6 +367,8 @@ public class WickedFireball : MonoBehaviour
     public void Boost(Vector3 newDirection)
     {
         if (isBoosted) return;
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (rb == null) return;
         isBoosted = true;
 
         // Multiply Stats
