@@ -38,6 +38,12 @@ public class TitleScreenMusic : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         audioSource.volume = 0f;
         audioSource.loop = true;
+
+        // Force values (serialized scene values override code defaults)
+        fadeDuration = 4.85f;
+        beatThreshold = 1.3f;
+        beatCooldown = 0.2f;
+        energyMinimum = 0.0005f;
     }
 
     void Start()
