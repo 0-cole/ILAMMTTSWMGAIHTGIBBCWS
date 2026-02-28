@@ -30,6 +30,12 @@ public class VideoVisualizer : MonoBehaviour
     {
         rawImage = GetComponent<RawImage>();
         rawImage.color = new Color(1f, 1f, 1f, 0f); // Start transparent
+        rawImage.raycastTarget = false; // Don't block button clicks
+
+        // Use additive blending so video black = transparent (bars show through)
+        var additiveShader = Shader.Find("UI/Additive");
+        if (additiveShader != null)
+            rawImage.material = new Material(additiveShader);
 
         // Render above the IntroSplash canvas (sort order 999)
         var canvasOverride = gameObject.AddComponent<Canvas>();
