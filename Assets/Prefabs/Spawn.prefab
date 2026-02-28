@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3462605812020227161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2729409353851760206}
+  - component: {fileID: 7999732314638184771}
+  m_Layer: 0
+  m_Name: Spawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2729409353851760206
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3462605812020227161}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7999732314638184771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3462605812020227161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db1eca60af61c0e4d88277521e5f9eb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyType: 0
+  dropType: 3
+  healthDropChance: 0.4
+  manaDropChance: 0.6
+  spawnGroupId: 0
+  glonkPrefab: {fileID: 6315512232348818502, guid: bc95af32ffc894b4d80c0307486fd6e2, type: 3}
+  billboardFireballPrefab: {fileID: 1994264577554675325, guid: e06d7af0d80edf047bb87e88061affba, type: 3}
+  healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
+  manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
+  smokeEffectPrefab: {fileID: 5185433393424686, guid: caa044ce3a94fed49bb9e90fca37ad34, type: 3}
+  billboardSprites:
+  - {fileID: 21300000, guid: 88c459baac03165429c8987268551881, type: 3}
+  - {fileID: 21300000, guid: 6e220921ddb7a0b4c8e4d1904df5f5cd, type: 3}
+  - {fileID: 21300000, guid: ca6d06c0c1a80d8439313c918834a119, type: 3}
+  - {fileID: 21300000, guid: 5de2a5abae3088d48ba885f7d2967949, type: 3}
+  - {fileID: 21300000, guid: bef072206c754044886607245ac0cf26, type: 3}
+  - {fileID: 21300000, guid: 740bc5dabaa5e5049837112f7b291791, type: 3}
+  - {fileID: 21300000, guid: a92848adafae71d429941c8a28f9f2b4, type: 3}
+  - {fileID: 21300000, guid: 406389753d712054b95dfdcf7b499248, type: 3}
+  quadScale: 2
+  glonkPrefabForHealthBar: {fileID: 6315512232348818502, guid: bc95af32ffc894b4d80c0307486fd6e2, type: 3}
+  hasSpawned: 0
