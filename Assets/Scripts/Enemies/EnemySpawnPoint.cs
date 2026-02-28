@@ -101,6 +101,10 @@ public class EnemySpawnPoint : MonoBehaviour
         {
             Sprite chosen = billboardSprites[Random.Range(0, billboardSprites.Length)];
             quadRenderer.material = CreateSpriteQuadMaterial(chosen);
+
+            // Adjust quad to match sprite aspect ratio
+            float aspect = (float)chosen.texture.width / chosen.texture.height;
+            quadObj.transform.localScale = new Vector3(quadScale * aspect, quadScale, 1f);
         }
 
         if (billboardSprites != null && billboardSprites.Length > 0)

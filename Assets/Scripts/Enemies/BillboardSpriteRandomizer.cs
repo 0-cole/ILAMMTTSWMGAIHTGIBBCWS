@@ -35,11 +35,17 @@ public class BillboardSpriteRandomizer : MonoBehaviour
             quadRenderer.material.mainTexture = chosen.texture;
         }
 
+        // Adjust quad scale to match sprite aspect ratio
+        float aspect = (float)chosen.texture.width / chosen.texture.height;
+        Vector3 s = quadRenderer.transform.localScale;
+        float baseScale = Mathf.Abs(s.y); // use Y as the base height
+        quadRenderer.transform.localScale = new Vector3(baseScale * aspect, baseScale, s.z);
+
         // Random horizontal flip
         if (Random.value > 0.5f)
         {
             Transform quadTransform = quadRenderer.transform;
-            Vector3 s = quadTransform.localScale;
+            s = quadTransform.localScale;
             s.x = -s.x;
             quadTransform.localScale = s;
         }
