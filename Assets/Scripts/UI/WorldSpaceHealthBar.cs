@@ -17,12 +17,10 @@ public class WorldSpaceHealthBar : MonoBehaviour
 
     void Start()
     {
-        // Auto-find references if missing
-        if (glonk == null) glonk = GetComponentInParent<GlonkEnemy>();
-        if (glonk == null) glonk = GetComponentInChildren<GlonkEnemy>();
-
-        if (billboardShooter == null) billboardShooter = GetComponentInParent<BillboardShooter>();
-        if (billboardShooter == null) billboardShooter = GetComponentInChildren<BillboardShooter>();
+        // Clear serialized references that may point to prefab instances
+        // and re-discover from the actual runtime parent
+        glonk = GetComponentInParent<GlonkEnemy>();
+        billboardShooter = GetComponentInParent<BillboardShooter>();
 
         if (glonk != null)
         {
