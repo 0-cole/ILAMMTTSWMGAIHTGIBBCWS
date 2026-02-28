@@ -113,11 +113,10 @@ public class EnemySpawnPoint : MonoBehaviour
             randomizer.possibleSprites = billboardSprites;
         }
 
-        // Physics
-        CapsuleCollider col = enemy.AddComponent<CapsuleCollider>();
+        // Physics — use BoxCollider sized to the quad so it's always hittable
+        BoxCollider col = enemy.AddComponent<BoxCollider>();
         col.center = Vector3.zero;
-        col.radius = 0.5f;
-        col.height = 1f;
+        col.size = new Vector3(quadObj.transform.localScale.x, quadObj.transform.localScale.y, 0.5f);
         Rigidbody rb = enemy.AddComponent<Rigidbody>();
         rb.isKinematic = true;
 
