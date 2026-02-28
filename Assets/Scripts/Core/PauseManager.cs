@@ -93,6 +93,7 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = 1f;
         AudioListener.pause = false;
         IsGamePaused = false;
+        IntroSplash.SkipIntro = true;
         SceneManager.LoadScene("MainMenu");
     }
 

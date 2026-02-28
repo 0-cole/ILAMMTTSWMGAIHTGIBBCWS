@@ -35,10 +35,33 @@ public class IntroSplash : MonoBehaviour
     public bool allowSkip = true;
     public KeyCode skipKey = KeyCode.Space;
 
+    /// <summary>
+    /// Set this to true before loading the MainMenu scene to skip the intro.
+    /// PauseManager.ReturnToMainMenu sets this automatically.
+    /// </summary>
+    public static bool SkipIntro = false;
+
     private bool skipped = false;
 
     void Start()
     {
+        if (SkipIntro)
+        {
+            SkipIntro = false;
+            skipped = true;
+
+            // Hide all splash panels
+            foreach (var panel in splashPanels)
+            {
+                if (panel != null) panel.SetActive(false);
+            }
+
+            // Show main menu immediately
+            if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
+            Destroy(gameObject);
+            return;
+        }
+
         // Hide main menu until intro is done
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(false);
