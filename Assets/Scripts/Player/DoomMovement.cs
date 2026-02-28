@@ -144,25 +144,25 @@ public class DoomMovement : MonoBehaviour
     
     private void GroundMove(Vector3 inputDirection, bool sprint)
     {
-        // Calculate target speed
         float targetSpeed = sprint ? runSpeed : moveSpeed;
         
-        // Apply friction
-        if (inputDirection.magnitude < 0.1f)
-        {
-            float drop = velocity.magnitude * friction * Time.deltaTime;
-            velocity *= Mathf.Max(velocity.magnitude - drop, 0) / Mathf.Max(velocity.magnitude, 0.001f);
-        }
-        
-        // Accelerate
         if (inputDirection.magnitude > 0.1f)
         {
+            // Move directly at target speed
             Vector3 targetVelocity = inputDirection * targetSpeed;
-            velocity = Vector3.MoveTowards(
-                new Vector3(velocity.x, 0, velocity.z),
-                targetVelocity,
-                groundAcceleration * Time.deltaTime
-            );
+            velocity.x = targetVelocity.x;
+            velocity.z = targetVelocity.z;
+        }
+        else
+        {
+            // Slight deceleration for visual smoothness
+            velocity.x *= 0.85f;
+            velocity.z *= 0.85f;
+            if (new Vector3(velocity.x, 0, velocity.z).magnitude < 0.1f)
+            {
+                velocity.x = 0;
+                velocity.z = 0;
+            }
         }
     }
     
