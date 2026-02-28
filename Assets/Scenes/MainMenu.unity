@@ -9724,12 +9724,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a2e9a18c260a6a408d5ff6ed0d3029d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fadeDuration: 5
+  fadeDuration: 4.85
   targetVolume: 0.8
-  fftWindow: 4
-  beatThreshold: 1.5
-  beatCooldown: 0.25
-  energyMinimum: 0.002
+  fftWindow: 5
+  beatThreshold: 1.3
+  beatCooldown: 0.2
+  energyMinimum: 0.0005
 --- !u!1 &2127001916
 GameObject:
   m_ObjectHideFlags: 0

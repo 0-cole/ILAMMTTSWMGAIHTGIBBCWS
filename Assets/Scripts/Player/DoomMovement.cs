@@ -7,8 +7,6 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float runSpeed = 12f;
     [SerializeField] private float airAcceleration = 10f;
-    [SerializeField] private float groundAcceleration = 14f;
-    [SerializeField] private float friction = 8f;
     
     [Header("Jump Settings")]
     [SerializeField] private float jumpHeight = 2f;

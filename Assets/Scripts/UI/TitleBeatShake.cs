@@ -10,7 +10,6 @@ using UnityEngine;
 public class TitleBeatShake : MonoBehaviour
 {
     [Header("Shake Settings")]
-    [SerializeField] private float shakeIntensity = 0.15f;
     [SerializeField] private float shakeDecay = 8f;
     [SerializeField] private float scalePunch = 1.12f;
 
