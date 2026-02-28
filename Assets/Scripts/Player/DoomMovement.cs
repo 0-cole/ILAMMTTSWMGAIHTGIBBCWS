@@ -100,8 +100,8 @@ public class DoomMovement : MonoBehaviour
             // Wall Slide Logic - allow lateral movement along the wall
             Vector3 slideRight = Vector3.Cross(wallNormal, Vector3.up).normalized;
             float lateral = Input.GetAxisRaw("Horizontal");
-            velocity.x = slideRight.x * lateral * moveSpeed;
-            velocity.z = slideRight.z * lateral * moveSpeed;
+            velocity.x = slideRight.x * lateral * moveSpeed * 0.35f;
+            velocity.z = slideRight.z * lateral * moveSpeed * 0.35f;
             velocity.y = Mathf.Max(velocity.y, -wallSlideSpeed);
             wallSlideTimer -= Time.deltaTime;
 
