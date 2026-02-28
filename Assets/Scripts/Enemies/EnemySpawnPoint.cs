@@ -19,7 +19,7 @@ public class EnemySpawnPoint : MonoBehaviour
 
     [Header("Spawn Group")]
     [Tooltip("Must match the SpawnTrigger's spawnGroupId")]
-    public int spawnGroupId = 0;
+    public float spawnGroupId = 0;
 
     [Tooltip("Wave number within this group (1 = first wave, 2 = second, etc.)")]
     public int waveNumber = 1;

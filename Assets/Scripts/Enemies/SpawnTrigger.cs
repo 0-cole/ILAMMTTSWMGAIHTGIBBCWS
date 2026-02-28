@@ -13,7 +13,7 @@ public class SpawnTrigger : MonoBehaviour
 {
     [Header("Spawn Group")]
     [Tooltip("Matches EnemySpawnPoint.spawnGroupId")]
-    public int spawnGroupId = 0;
+    public float spawnGroupId = 0;
 
     [Header("Timing")]
     [Tooltip("Delay between each enemy spawn in a wave")]
@@ -66,7 +66,7 @@ public class SpawnTrigger : MonoBehaviour
 
         // Get all matching points grouped by wave
         var waveGroups = allPoints
-            .Where(p => p.spawnGroupId == spawnGroupId && !p.hasSpawned)
+            .Where(p => Mathf.Approximately(p.spawnGroupId, spawnGroupId) && !p.hasSpawned)
             .GroupBy(p => p.waveNumber)
             .OrderBy(g => g.Key)
             .ToList();
