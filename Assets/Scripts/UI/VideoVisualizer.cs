@@ -3,14 +3,14 @@ using UnityEngine.UI;
 using UnityEngine.Video;
 
 /// <summary>
-/// Plays a pre-made visualizer video on a RawImage at the top of the screen.
-/// Renders above the intro splash so it's visible during the intro sequence.
+/// Plays a pre-made visualizer video wrapped into a circle using polar coordinates.
+/// Place as a square RawImage in the top-right corner of your Canvas.
 /// 
 /// Setup:
-/// 1. Create a RawImage in your Canvas, anchored to the top, stretched width
+/// 1. Create a square RawImage (e.g. 250x250) anchored top-right
 /// 2. Add this script to it
-/// 3. Assign the VideoClip in Inspector (Assets/Video/TitleVisualizer.mp4)
-/// 4. Flip Y scale to -1 on the RectTransform if your video isn't already upside down
+/// 3. Assign the VideoClip in Inspector
+/// 4. No need to flip Y — the shader handles the mapping
 /// </summary>
 [RequireComponent(typeof(RawImage))]
 public class VideoVisualizer : MonoBehaviour
@@ -19,23 +19,33 @@ public class VideoVisualizer : MonoBehaviour
     [SerializeField] private VideoClip visualizerClip;
 
     [Header("Fade")]
-    [SerializeField] private float fadeDuration = 5.5f;
+    [SerializeField] private float fadeDuration = 4.5f;
+
+    [Header("Circle")]
+    [SerializeField] private float innerRadius = 0.15f;
+    [SerializeField] private float outerRadius = 0.48f;
 
     private RawImage rawImage;
     private VideoPlayer videoPlayer;
     private RenderTexture renderTexture;
+    private Material circularMat;
     private float fadeTimer;
 
     void Start()
     {
         rawImage = GetComponent<RawImage>();
         rawImage.color = new Color(1f, 1f, 1f, 0f); // Start transparent
-        rawImage.raycastTarget = false; // Don't block button clicks
+        rawImage.raycastTarget = false;
 
-        // Use additive blending so video black = transparent (bars show through)
-        var additiveShader = Shader.Find("UI/Additive");
-        if (additiveShader != null)
-            rawImage.material = new Material(additiveShader);
+        // Circular visualizer shader (polar warp + additive blend)
+        var circShader = Shader.Find("UI/CircularVisualizer");
+        if (circShader != null)
+        {
+            circularMat = new Material(circShader);
+            circularMat.SetFloat("_InnerRadius", innerRadius);
+            circularMat.SetFloat("_OuterRadius", outerRadius);
+            rawImage.material = circularMat;
+        }
 
         // Render above the IntroSplash canvas (sort order 999)
         var canvasOverride = gameObject.AddComponent<Canvas>();
@@ -84,5 +94,7 @@ public class VideoVisualizer : MonoBehaviour
             renderTexture.Release();
             Destroy(renderTexture);
         }
+        if (circularMat != null)
+            Destroy(circularMat);
     }
 }

@@ -10,20 +10,24 @@ public class TitleScreenMusic : MonoBehaviour
     public static TitleScreenMusic Instance { get; private set; }
 
     [Header("Fade In")]
-    [SerializeField] private float fadeDuration = 5.5f;
+    [SerializeField] private float fadeDuration = 4.5f;
     [SerializeField] private float targetVolume = 0.8f;
 
     [Header("Spectrum")]
-    [SerializeField] private FFTWindow fftWindow = FFTWindow.Blackman;
+    [SerializeField] private FFTWindow fftWindow = FFTWindow.BlackmanHarris;
+
+    [Header("Beat Detection")]
+    [SerializeField] private float beatThreshold = 1.4f;
+    [SerializeField] private float beatCooldown = 0.25f;
+    [SerializeField] private float energyMinimum = 0.002f;
 
     private AudioSource audioSource;
     private float fadeTimer;
-    private float[] spectrumData = new float[256];
+    private float[] spectrumData = new float[1024];
 
     // Beat detection
-    private float[] bandEnergies = new float[8];
-    private float[] bandHistory = new float[8];
-    private float beatThreshold = 1.5f;
+    private float energyHistory;
+    private float lastBeatTime = -1f;
 
     public float[] SpectrumData => spectrumData;
     public bool IsBeat { get; private set; }
@@ -50,29 +54,34 @@ public class TitleScreenMusic : MonoBehaviour
             audioSource.volume = Mathf.Lerp(0f, targetVolume, fadeTimer / fadeDuration);
         }
 
-        // Get spectrum
+        // Get spectrum (1024 samples for better frequency resolution)
         audioSource.GetSpectrumData(spectrumData, 0, fftWindow);
 
-        // Simple beat detection using low-frequency energy
         DetectBeat();
     }
 
     private void DetectBeat()
     {
-        // Sum low-frequency bands (bass)
+        // Sum bass frequencies (bins 1-32 ≈ 20-600Hz at 44100/1024)
         float currentEnergy = 0f;
-        for (int i = 0; i < 16; i++)
+        for (int i = 1; i < 32; i++)
         {
             currentEnergy += spectrumData[i] * spectrumData[i];
         }
         currentEnergy = Mathf.Sqrt(currentEnergy);
 
-        // Compare to running average
-        float avg = bandHistory[0];
-        IsBeat = currentEnergy > avg * beatThreshold && currentEnergy > 0.005f;
+        // Beat = energy spike above running average, with cooldown to prevent rapid re-triggers
+        bool spike = currentEnergy > energyHistory * beatThreshold && currentEnergy > energyMinimum;
+        bool cooledDown = (Time.time - lastBeatTime) > beatCooldown;
 
-        // Update history with smoothing
-        bandHistory[0] = Mathf.Lerp(bandHistory[0], currentEnergy, Time.deltaTime * 5f);
+        IsBeat = spike && cooledDown;
+
+        if (IsBeat)
+            lastBeatTime = Time.time;
+
+        // Smooth running average — faster attack, slower decay for responsiveness
+        float smoothSpeed = currentEnergy > energyHistory ? 15f : 3f;
+        energyHistory = Mathf.Lerp(energyHistory, currentEnergy, Time.deltaTime * smoothSpeed);
     }
 
     void OnDestroy()

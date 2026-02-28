@@ -2833,7 +2833,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000019461, y: 402}
+  m_AnchoredPosition: {x: 0.000019461, y: 418}
   m_SizeDelta: {x: 2040, y: 488.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &474608585
@@ -2884,7 +2884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualizerClip: {fileID: 32900000, guid: 9519903e96653ec4cb3c0f5a20c52d9f, type: 3}
-  fadeDuration: 5.5
+  fadeDuration: 4.5
 --- !u!1 &479847995
 GameObject:
   m_ObjectHideFlags: 0
@@ -9722,7 +9722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a2e9a18c260a6a408d5ff6ed0d3029d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fadeDuration: 5.5
+  fadeDuration: 4.5
   targetVolume: 0.8
   fftWindow: 4
 --- !u!1 &2127001916

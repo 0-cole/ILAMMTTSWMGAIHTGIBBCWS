@@ -1,9 +1,11 @@
-Shader "UI/Additive"
+Shader "UI/CircularVisualizer"
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "black" {}
         _Color ("Tint", Color) = (1,1,1,1)
+        _InnerRadius ("Inner Radius", Range(0,0.5)) = 0.2
+        _OuterRadius ("Outer Radius", Range(0,0.5)) = 0.48
     }
     SubShader
     {
@@ -17,7 +19,7 @@ Shader "UI/Additive"
         Cull Off
         Lighting Off
         ZWrite Off
-        Blend One One // Additive: black becomes invisible
+        Blend One One // Additive: black = invisible
 
         Pass
         {
@@ -42,6 +44,8 @@ Shader "UI/Additive"
 
             sampler2D _MainTex;
             float4 _Color;
+            float _InnerRadius;
+            float _OuterRadius;
 
             v2f vert (appdata v)
             {
@@ -54,7 +58,24 @@ Shader "UI/Additive"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 col = tex2D(_MainTex, i.uv) * i.color;
+                // Convert UV to centered coordinates (-0.5 to 0.5)
+                float2 centered = i.uv - 0.5;
+                float dist = length(centered);
+                float angle = atan2(centered.y, centered.x);
+
+                // Map angle to horizontal UV (0-1)
+                float u = (angle + 3.14159265) / (2.0 * 3.14159265);
+
+                // Map distance to vertical UV (inner=bottom of video, outer=top)
+                float v = saturate((dist - _InnerRadius) / (_OuterRadius - _InnerRadius));
+
+                // Clip outside the ring
+                float ringMask = step(_InnerRadius, dist) * step(dist, _OuterRadius);
+
+                // Sample the video with polar coordinates
+                fixed4 col = tex2D(_MainTex, float2(u, 1.0 - v));
+                col *= i.color * ringMask;
+
                 return col;
             }
             ENDCG
