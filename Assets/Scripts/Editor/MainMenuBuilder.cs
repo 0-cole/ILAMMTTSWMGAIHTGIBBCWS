@@ -261,6 +261,68 @@ public class MainMenuBuilder : Editor
             settingsBackBtn.GetComponent<Button>().onClick, mainMenu.OnSettingsBackClicked);
 
         // ==========================================
+        // INTRO SPLASH (ULTRAKILL-style)
+        // ==========================================
+        GameObject introCanvas = new GameObject("IntroSplashCanvas");
+        Canvas introCanvasComp = introCanvas.AddComponent<Canvas>();
+        introCanvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+        introCanvasComp.sortingOrder = 999;
+        CanvasScaler introScaler = introCanvas.AddComponent<CanvasScaler>();
+        introScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        introScaler.referenceResolution = new Vector2(1920, 1080);
+        introScaler.matchWidthOrHeight = 0.5f;
+        introCanvas.AddComponent<GraphicRaycaster>();
+
+        IntroSplash introSplash = introCanvas.AddComponent<IntroSplash>();
+
+        // Persistent black background that covers the whole screen during intro
+        GameObject introBg = new GameObject("IntroBG");
+        introBg.transform.SetParent(introCanvas.transform, false);
+        RectTransform introBgRt = introBg.AddComponent<RectTransform>();
+        introBgRt.anchorMin = Vector2.zero;
+        introBgRt.anchorMax = Vector2.one;
+        introBgRt.sizeDelta = Vector2.zero;
+        Image introBgImg = introBg.AddComponent<Image>();
+        introBgImg.color = Color.black;
+
+        // --- Splash 1: Team/Studio Name ---
+        GameObject splash1 = new GameObject("Splash_TeamName");
+        splash1.transform.SetParent(introCanvas.transform, false);
+        RectTransform s1Rt = splash1.AddComponent<RectTransform>();
+        s1Rt.anchorMin = Vector2.zero;
+        s1Rt.anchorMax = Vector2.one;
+        s1Rt.sizeDelta = Vector2.zero;
+
+        CreateText(splash1.transform, "TeamNameText", "YOUR STUDIO NAME",
+            new Vector2(0, 20), new Vector2(800, 80), 42, textWhite, FontStyles.Bold, TextAlignmentOptions.Center);
+        CreateText(splash1.transform, "TeamSubText", "presents",
+            new Vector2(0, -40), new Vector2(400, 40), 20, subtleGray, FontStyles.Italic, TextAlignmentOptions.Center);
+
+        // --- Splash 2: Game Title ---
+        GameObject splash2 = new GameObject("Splash_GameTitle");
+        splash2.transform.SetParent(introCanvas.transform, false);
+        RectTransform s2Rt = splash2.AddComponent<RectTransform>();
+        s2Rt.anchorMin = Vector2.zero;
+        s2Rt.anchorMax = Vector2.one;
+        s2Rt.sizeDelta = Vector2.zero;
+
+        CreateText(splash2.transform, "GameTitleText", "ILAMMTTSWMGAIHTGIBBCWS",
+            new Vector2(0, 20), new Vector2(1200, 100), 52, accentRed, FontStyles.Bold, TextAlignmentOptions.Center);
+        CreateText(splash2.transform, "GameSubtitleText", "— A Wizard's Descent —",
+            new Vector2(0, -50), new Vector2(600, 40), 22, accentOrange, FontStyles.Italic, TextAlignmentOptions.Center);
+
+        // Wire up IntroSplash references
+        introSplash.splashPanels = new GameObject[] { splash1, splash2 };
+        introSplash.mainMenuPanel = mainPanel;
+        introSplash.fadeInDuration = 0.8f;
+        introSplash.holdDuration = 2f;
+        introSplash.fadeOutDuration = 0.6f;
+        introSplash.delayBetweenSplashes = 0.4f;
+
+        splash1.SetActive(false);
+        splash2.SetActive(false);
+
+        // ==========================================
         // Save the scene
         // ==========================================
         string scenePath = "Assets/Scenes/MainMenu.unity";
