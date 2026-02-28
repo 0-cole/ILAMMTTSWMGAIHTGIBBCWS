@@ -67,6 +67,27 @@ public class EnemySpawnPoint : MonoBehaviour
         return null;
     }
 
+    private Vector3 GetSafeSpawnPosition()
+    {
+        Vector3 pos = transform.position;
+
+        // Try NavMesh first — find nearest valid point
+        UnityEngine.AI.NavMeshHit navHit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(pos, out navHit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            return navHit.position;
+        }
+
+        // Fallback: raycast down to find floor surface
+        if (Physics.Raycast(pos + Vector3.up * 3f, Vector3.down, out RaycastHit hit, 10f))
+        {
+            return hit.point + Vector3.up * 0.1f;
+        }
+
+        // Last resort: just nudge up a bit
+        return pos + Vector3.up * 1f;
+    }
+
     private GameObject SpawnGlonk()
     {
         if (glonkPrefab == null)
@@ -75,7 +96,7 @@ public class EnemySpawnPoint : MonoBehaviour
             return null;
         }
 
-        GameObject enemy = Instantiate(glonkPrefab, transform.position, transform.rotation);
+        GameObject enemy = Instantiate(glonkPrefab, GetSafeSpawnPosition(), transform.rotation);
         ConfigureDrops(enemy);
         return enemy;
     }
@@ -84,7 +105,7 @@ public class EnemySpawnPoint : MonoBehaviour
     {
         // Spawn at world root so parent scale doesn't squish the billboard
         GameObject enemy = new GameObject("Billboard Enemy");
-        enemy.transform.position = transform.position + Vector3.up * 1f;
+        enemy.transform.position = GetSafeSpawnPosition() + Vector3.up * 1f;
         enemy.transform.rotation = Quaternion.identity;
 
         // Quad visual
