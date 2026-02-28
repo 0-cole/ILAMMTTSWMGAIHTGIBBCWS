@@ -23,10 +23,11 @@ public class TitleScreenMusic : MonoBehaviour
 
     private AudioSource audioSource;
     private float fadeTimer;
-    private float[] spectrumData = new float[1024];
+    private float[] spectrumData = new float[2048]; // 2048 for ~21Hz per bin at 44100Hz
 
-    // Beat detection
-    private float energyHistory;
+    // Beat detection — spectral flux on sub-bass/kick range
+    private float[] prevSpectrum = new float[2048];
+    private float fluxHistory;
     private float lastBeatTime = -1f;
 
     public float[] SpectrumData => spectrumData;
@@ -42,7 +43,7 @@ public class TitleScreenMusic : MonoBehaviour
         // Force values (serialized scene values override code defaults)
         fadeDuration = 4.85f;
         beatThreshold = 1.3f;
-        beatCooldown = 0.2f;
+        beatCooldown = 0.18f;
         energyMinimum = 0.0005f;
     }
 
@@ -68,16 +69,32 @@ public class TitleScreenMusic : MonoBehaviour
 
     private void DetectBeat()
     {
-        // Sum bass frequencies (bins 1-32 ≈ 20-600Hz at 44100/1024)
-        float currentEnergy = 0f;
-        for (int i = 1; i < 32; i++)
+        // Spectral flux on kick/bass range only
+        // At 2048 samples / 44100Hz, each bin ≈ 21.5Hz
+        // Bins 1-7 ≈ 21-150Hz = kick drum / sub-bass territory
+        float flux = 0f;
+        for (int i = 1; i <= 7; i++)
         {
-            currentEnergy += spectrumData[i] * spectrumData[i];
+            // Only count positive changes (onset = energy appearing, not fading)
+            float diff = spectrumData[i] - prevSpectrum[i];
+            if (diff > 0f)
+                flux += diff;
         }
-        currentEnergy = Mathf.Sqrt(currentEnergy);
 
-        // Beat = energy spike above running average, with cooldown to prevent rapid re-triggers
-        bool spike = currentEnergy > energyHistory * beatThreshold && currentEnergy > energyMinimum;
+        // Also check snare range: bins 7-14 ≈ 150-300Hz
+        float snareFlux = 0f;
+        for (int i = 7; i <= 14; i++)
+        {
+            float diff = spectrumData[i] - prevSpectrum[i];
+            if (diff > 0f)
+                snareFlux += diff;
+        }
+
+        // Combine with kick weighted heavier
+        float totalFlux = flux * 1.5f + snareFlux * 0.5f;
+
+        // Compare to running average
+        bool spike = totalFlux > fluxHistory * beatThreshold && totalFlux > energyMinimum;
         bool cooledDown = (Time.time - lastBeatTime) > beatCooldown;
 
         IsBeat = spike && cooledDown;
@@ -85,12 +102,14 @@ public class TitleScreenMusic : MonoBehaviour
         if (IsBeat)
         {
             lastBeatTime = Time.time;
-            Debug.Log($"[Beat] energy={currentEnergy:F4} avg={energyHistory:F4} ratio={currentEnergy / Mathf.Max(0.0001f, energyHistory):F2}");
+            Debug.Log($"[Beat] flux={totalFlux:F5} avg={fluxHistory:F5} kick={flux:F5} snare={snareFlux:F5}");
         }
 
-        // Smooth running average — slow attack so beats stay detectable as spikes
-        float smoothSpeed = currentEnergy > energyHistory ? 2f : 0.5f;
-        energyHistory = Mathf.Lerp(energyHistory, currentEnergy, Time.deltaTime * smoothSpeed);
+        // Slow-moving average so spikes stay detectable
+        fluxHistory = Mathf.Lerp(fluxHistory, totalFlux, Time.deltaTime * 1.5f);
+
+        // Save current frame for next comparison
+        System.Array.Copy(spectrumData, prevSpectrum, spectrumData.Length);
     }
 
     void OnDestroy()
