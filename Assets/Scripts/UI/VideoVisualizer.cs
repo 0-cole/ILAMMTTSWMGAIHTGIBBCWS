@@ -19,7 +19,7 @@ public class VideoVisualizer : MonoBehaviour
     [SerializeField] private VideoClip visualizerClip;
 
     [Header("Fade")]
-    [SerializeField] private float fadeDuration = 4f;
+    [SerializeField] private float fadeDuration = 3.5f;
 
     [Header("Circle")]
     [SerializeField] private float innerRadius = 0.15f;

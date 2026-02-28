@@ -10,7 +10,7 @@ public class TitleScreenMusic : MonoBehaviour
     public static TitleScreenMusic Instance { get; private set; }
 
     [Header("Fade In")]
-    [SerializeField] private float fadeDuration = 4f;
+    [SerializeField] private float fadeDuration = 3.5f;
     [SerializeField] private float targetVolume = 0.8f;
 
     [Header("Spectrum")]
