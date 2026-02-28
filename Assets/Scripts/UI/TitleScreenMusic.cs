@@ -82,8 +82,8 @@ public class TitleScreenMusic : MonoBehaviour
             Debug.Log($"[Beat] energy={currentEnergy:F4} avg={energyHistory:F4} ratio={currentEnergy / Mathf.Max(0.0001f, energyHistory):F2}");
         }
 
-        // Smooth running average — faster attack, slower decay for responsiveness
-        float smoothSpeed = currentEnergy > energyHistory ? 15f : 3f;
+        // Smooth running average — slow attack so beats stay detectable as spikes
+        float smoothSpeed = currentEnergy > energyHistory ? 2f : 0.5f;
         energyHistory = Mathf.Lerp(energyHistory, currentEnergy, Time.deltaTime * smoothSpeed);
     }
 
