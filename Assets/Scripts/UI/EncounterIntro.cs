@@ -29,6 +29,8 @@ public class EncounterIntro : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip combatMusic;
     [SerializeField] private float combatMusicVolume = 0.7f;
+    [SerializeField] private AudioClip typeSlamClip;
+    [SerializeField] private float typeSlamVolume = 0.15f;
 
     [Header("Style")]
     [SerializeField] private Color textColor = new Color(1f, 0.2f, 0.2f, 1f);
@@ -36,6 +38,7 @@ public class EncounterIntro : MonoBehaviour
 
     private AudioSource ambienceSource;
     private AudioSource musicSource;
+    private AudioSource slamSource;
     private bool isPlaying = false;
 
     public bool IsPlaying => isPlaying;
@@ -51,6 +54,15 @@ public class EncounterIntro : MonoBehaviour
         if (isPlaying) return;
         ambienceSource = ambience;
         musicSource = music;
+
+        if (typeSlamClip != null && slamSource == null)
+        {
+            slamSource = gameObject.AddComponent<AudioSource>();
+            slamSource.playOnAwake = false;
+            slamSource.clip = typeSlamClip;
+            slamSource.volume = typeSlamVolume;
+        }
+
         StartCoroutine(IntroSequence(onComplete));
     }
 
@@ -140,6 +152,13 @@ public class EncounterIntro : MonoBehaviour
         {
             if (textDisplay != null)
                 textDisplay.text += text[i];
+
+            if (text[i] != ' ' && slamSource != null)
+            {
+                slamSource.pitch = Random.Range(0.9f, 1.1f);
+                slamSource.PlayOneShot(typeSlamClip, typeSlamVolume);
+            }
+
             yield return new WaitForSecondsRealtime(typeSpeed);
         }
     }
