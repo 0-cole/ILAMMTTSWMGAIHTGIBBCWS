@@ -1,5 +1,4 @@
-ILAMMTTSWMGAIHTGIBBCWS
-I Lost All My Money To The Shadow Wizard Money Gang And I Have To Get It Back By Casting Wicked Spells
+ILAMMTTSWMGAIHTGIBBCWS  -- I Lost All My Money To The Shadow Wizard Money Gang And I Have To Get It Back By Casting Wicked Spells
 
 A fast-paced DOOM-style first-person shooter built in Unity where you fight through hordes of shadow wizard enemies using magical spells to reclaim your stolen fortune.
 
