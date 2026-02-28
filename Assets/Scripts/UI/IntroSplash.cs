@@ -26,7 +26,7 @@ public class IntroSplash : MonoBehaviour
 
     [Header("Timing")]
     [Tooltip("Total duration of the entire intro sequence (overrides individual timings)")]
-    public float totalIntroDuration = 4f;
+    public float totalIntroDuration = 4.75f;
     public float fadeInDuration = 0.4f;
     public float fadeOutDuration = 0.3f;
     public float delayBetweenSplashes = 0.2f;

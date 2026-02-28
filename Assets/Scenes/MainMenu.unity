@@ -2084,8 +2084,8 @@ MonoBehaviour:
   - {fileID: 1185617075}
   - {fileID: 1112457207}
   mainMenuPanel: {fileID: 54050396}
+  totalIntroDuration: 4
   fadeInDuration: 0.8
-  holdDuration: 2
   fadeOutDuration: 0.6
   delayBetweenSplashes: 0.4
   allowSkip: 1
@@ -2833,8 +2833,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 579.7, y: 274.3363}
-  m_SizeDelta: {x: 559.4, y: 429.3226}
+  m_AnchoredPosition: {x: 706, y: 292.64}
+  m_SizeDelta: {x: 559.4, y: 431.5727}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &474608585
 MonoBehaviour:
@@ -2884,7 +2884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualizerClip: {fileID: 32900000, guid: 9519903e96653ec4cb3c0f5a20c52d9f, type: 3}
-  fadeDuration: 3.5
+  fadeDuration: 5
   innerRadius: 0.15
   outerRadius: 0.48
 --- !u!1 &479847995
@@ -9724,7 +9724,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a2e9a18c260a6a408d5ff6ed0d3029d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fadeDuration: 3.5
+  fadeDuration: 5
   targetVolume: 0.8
   fftWindow: 4
   beatThreshold: 1.5

@@ -10,16 +10,16 @@ public class TitleScreenMusic : MonoBehaviour
     public static TitleScreenMusic Instance { get; private set; }
 
     [Header("Fade In")]
-    [SerializeField] private float fadeDuration = 3.5f;
+    [SerializeField] private float fadeDuration = 4.75f;
     [SerializeField] private float targetVolume = 0.8f;
 
     [Header("Spectrum")]
     [SerializeField] private FFTWindow fftWindow = FFTWindow.BlackmanHarris;
 
     [Header("Beat Detection")]
-    [SerializeField] private float beatThreshold = 1.4f;
-    [SerializeField] private float beatCooldown = 0.25f;
-    [SerializeField] private float energyMinimum = 0.002f;
+    [SerializeField] private float beatThreshold = 1.3f;
+    [SerializeField] private float beatCooldown = 0.2f;
+    [SerializeField] private float energyMinimum = 0.0005f;
 
     private AudioSource audioSource;
     private float fadeTimer;
@@ -77,7 +77,10 @@ public class TitleScreenMusic : MonoBehaviour
         IsBeat = spike && cooledDown;
 
         if (IsBeat)
+        {
             lastBeatTime = Time.time;
+            Debug.Log($"[Beat] energy={currentEnergy:F4} avg={energyHistory:F4} ratio={currentEnergy / Mathf.Max(0.0001f, energyHistory):F2}");
+        }
 
         // Smooth running average — faster attack, slower decay for responsiveness
         float smoothSpeed = currentEnergy > energyHistory ? 15f : 3f;
