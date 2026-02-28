@@ -6,12 +6,15 @@ defmodule ShadowWizard.Prophecy do
 
   def read_prophecy do
     prophecy = [
-      "One shall come who has lost all their money",
-      "To the Shadow Wizard Money Gang",
-      "And they shall have to get it back",
+      "One shall come who has lost $30",
+      "To a single thug of the Shadow Wizard Money Gang",
+      "And they shall make it their life's mission",
+      "To wipe out the ENTIRE clan",
       "By casting WICKED SPELLS",
+      "The final boss is literally a grieving father",
       "And there will be breakcore music",
-      "And it will go HARD"
+      "And it will go HARD",
+      "...you are the villain of this story"
     ]
 
     Enum.each(prophecy, fn line ->

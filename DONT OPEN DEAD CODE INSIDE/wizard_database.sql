@@ -6,14 +6,15 @@ CREATE TABLE shadow_wizards (
     last_words TEXT
 );
 
-INSERT INTO shadow_wizards VALUES (1, 'Glonk', 5000, FALSE, NULL);
-INSERT INTO shadow_wizards VALUES (2, 'Billboard Steve', 3000, FALSE, NULL);
-INSERT INTO shadow_wizards VALUES (3, 'The Purple Menace', 7000, FALSE, NULL);
-INSERT INTO shadow_wizards VALUES (4, 'Gold Wizard Gary', 10000, FALSE, NULL);
+INSERT INTO shadow_wizards VALUES (1, 'Glonk', 10, FALSE, NULL);
+INSERT INTO shadow_wizards VALUES (2, 'Billboard Steve', 8, FALSE, NULL);
+INSERT INTO shadow_wizards VALUES (3, 'The Purple Menace', 7, FALSE, NULL);
+INSERT INTO shadow_wizards VALUES (4, 'The King', 5, FALSE, NULL);
 
--- player enters the dungeon
-UPDATE shadow_wizards SET is_defeated = TRUE, last_words = 'NOT THE WICKED SPELLS' WHERE id = 1;
-UPDATE shadow_wizards SET is_defeated = TRUE, last_words = 'MY BILLBOARD NOOO' WHERE id = 2;
+-- ONE thug stole $30. player chose violence against the ENTIRE gang.
+UPDATE shadow_wizards SET is_defeated = TRUE, last_words = 'IT WAS ONLY $30 BRO' WHERE id = 1;
+UPDATE shadow_wizards SET is_defeated = TRUE, last_words = 'I DIDNT EVEN TAKE YOUR MONEY' WHERE id = 2;
+UPDATE shadow_wizards SET is_defeated = TRUE, last_words = 'PLEASE I HAVE A FAMILY' WHERE id = 3;
 
-SELECT name, stolen_gold, last_words FROM shadow_wizards WHERE is_defeated = TRUE;
--- result: all your money is coming back baby
+-- final boss
+-- UPDATE shadow_wizards SET is_defeated = TRUE, last_words = 'YOU KILLED MY FAMILY! I WONT LET YOU LEAVE HERE ALIVE!' WHERE id = 4;

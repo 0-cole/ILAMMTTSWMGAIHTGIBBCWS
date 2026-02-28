@@ -1,6 +1,6 @@
 ILAMMTTSWMGAIHTGIBBCWS  -- I Lost All My Money To The Shadow Wizard Money Gang And I Have To Get It Back By Casting Wicked Spells
 
-A fast-paced DOOM-style first-person shooter built in Unity where you fight through hordes of shadow wizard enemies using magical spells to reclaim your stolen fortune.
+A fast-paced DOOM-style first-person shooter built in Unity where a thug from the Shadow Wizard Money Gang stole $30 from you. Naturally, you made it your life's mission to wipe out the entire clan with wicked spells. You are not the hero of this story.
 
 Gameplay — DOOM-style movement (wall sliding, bunny hopping), spell-based combat (Fireball, Chain Lightning, Punch with projectile boosting), wave-based encounters with ULTRAKILL-style intros, Glonk melee + Billboard ranged enemies, breakcore soundtrack
 
