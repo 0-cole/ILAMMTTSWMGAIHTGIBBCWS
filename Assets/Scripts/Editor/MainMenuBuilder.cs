@@ -314,10 +314,10 @@ public class MainMenuBuilder : Editor
         // Wire up IntroSplash references
         introSplash.splashPanels = new GameObject[] { splash1, splash2 };
         introSplash.mainMenuPanel = mainPanel;
-        introSplash.fadeInDuration = 0.8f;
-        introSplash.holdDuration = 2f;
-        introSplash.fadeOutDuration = 0.6f;
-        introSplash.delayBetweenSplashes = 0.4f;
+        introSplash.fadeInDuration = 0.4f;
+        introSplash.totalIntroDuration = 4f;
+        introSplash.fadeOutDuration = 0.3f;
+        introSplash.delayBetweenSplashes = 0.2f;
 
         splash1.SetActive(false);
         splash2.SetActive(false);
