@@ -47,7 +47,12 @@ public class LevelMusicManager : MonoBehaviour
             ambienceSource.clip = ambienceClip;
             ambienceSource.volume = ambienceVolume;
             ambienceSource.loop = true;
+            ambienceSource.ignoreListenerPause = false;
             ambienceSource.Play();
+        }
+        if (combatSource != null)
+        {
+            combatSource.ignoreListenerPause = false;
         }
     }
 

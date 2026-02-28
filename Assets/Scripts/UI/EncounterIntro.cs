@@ -43,6 +43,13 @@ public class EncounterIntro : MonoBehaviour
 
     public bool IsPlaying => isPlaying;
 
+    void Awake()
+    {
+        // Hide text until intro plays
+        if (textDisplay != null)
+            textDisplay.gameObject.SetActive(false);
+    }
+
     /// <summary>
     /// Call this to start the encounter intro sequence.
     /// ambienceSource is the current ambient audio to fade out.
