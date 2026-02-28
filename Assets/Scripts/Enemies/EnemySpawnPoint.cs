@@ -82,10 +82,10 @@ public class EnemySpawnPoint : MonoBehaviour
 
     private GameObject SpawnBillboard()
     {
-        // Reuse BillboardSpawner's approach but one-shot
+        // Spawn at world root so parent scale doesn't squish the billboard
         GameObject enemy = new GameObject("Billboard Enemy");
         enemy.transform.position = transform.position + Vector3.up * 1f;
-        enemy.transform.rotation = transform.rotation;
+        enemy.transform.rotation = Quaternion.identity;
 
         // Quad visual
         GameObject quadObj = GameObject.CreatePrimitive(PrimitiveType.Quad);
