@@ -44,6 +44,16 @@ public class SpawnTrigger : MonoBehaviour
 
         triggered = true;
 
+        // Mark all other SpawnTriggers with the same group ID as triggered so they don't fire
+        foreach (var st in FindObjectsByType<SpawnTrigger>(FindObjectsSortMode.None))
+        {
+            if (st != this && Mathf.Approximately(st.spawnGroupId, spawnGroupId))
+            {
+                st.triggered = true;
+                Destroy(st.gameObject);
+            }
+        }
+
         if (encounterIntro != null)
         {
             AudioSource ambience = LevelMusicManager.Instance != null ? LevelMusicManager.Instance.AmbienceSource : null;
