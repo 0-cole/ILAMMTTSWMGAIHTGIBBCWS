@@ -2826,15 +2826,15 @@ RectTransform:
   m_GameObject: {fileID: 474608583}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: -1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 166433698}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000019461, y: 418}
-  m_SizeDelta: {x: 2040, y: 488.4}
+  m_AnchoredPosition: {x: 666, y: 321}
+  m_SizeDelta: {x: 386.7921, y: 335.9953}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &474608585
 MonoBehaviour:
@@ -2884,7 +2884,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualizerClip: {fileID: 32900000, guid: 9519903e96653ec4cb3c0f5a20c52d9f, type: 3}
-  fadeDuration: 4.5
+  fadeDuration: 4
+  innerRadius: 0.15
+  outerRadius: 0.48
 --- !u!1 &479847995
 GameObject:
   m_ObjectHideFlags: 0
@@ -9722,9 +9724,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a2e9a18c260a6a408d5ff6ed0d3029d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fadeDuration: 4.5
+  fadeDuration: 4
   targetVolume: 0.8
   fftWindow: 4
+  beatThreshold: 1.5
+  beatCooldown: 0.25
+  energyMinimum: 0.002
 --- !u!1 &2127001916
 GameObject:
   m_ObjectHideFlags: 0

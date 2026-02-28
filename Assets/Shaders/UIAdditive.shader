@@ -72,8 +72,8 @@ Shader "UI/CircularVisualizer"
                 // Clip outside the ring
                 float ringMask = step(_InnerRadius, dist) * step(dist, _OuterRadius);
 
-                // Sample the video with polar coordinates
-                fixed4 col = tex2D(_MainTex, float2(u, 1.0 - v));
+                // Sample the video with polar coordinates (bars extend outward)
+                fixed4 col = tex2D(_MainTex, float2(u, v));
                 col *= i.color * ringMask;
 
                 return col;
