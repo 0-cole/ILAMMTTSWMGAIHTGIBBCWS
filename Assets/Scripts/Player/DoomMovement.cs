@@ -34,7 +34,8 @@ public class DoomMovement : MonoBehaviour
     private float wallJumpCooldownTimer;
     
     [Header("Audio")]
-    [SerializeField] private AudioClip doubleJumpGrunt;
+    [SerializeField] private AudioClip jumpGrunt;
+    [SerializeField] private float doubleJumpPitchBoost = 1.3f;
     private AudioSource audioSource;
 
     private CharacterController controller;
@@ -74,6 +75,7 @@ public class DoomMovement : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * gravity);
                 jumpCount = 1;
+                PlayJumpGrunt(1f);
             }
         }
         else
@@ -85,7 +87,7 @@ public class DoomMovement : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * doubleJumpMultiplier * gravity);
                 jumpCount = maxJumps;
-                if (doubleJumpGrunt != null) audioSource.PlayOneShot(doubleJumpGrunt);
+                PlayJumpGrunt(doubleJumpPitchBoost);
             }
         }
         
@@ -187,6 +189,14 @@ public class DoomMovement : MonoBehaviour
     public float GetSpeed()
     {
         return new Vector3(velocity.x, 0, velocity.z).magnitude;
+    }
+
+    private void PlayJumpGrunt(float pitch)
+    {
+        if (jumpGrunt == null) return;
+        audioSource.pitch = pitch;
+        audioSource.PlayOneShot(jumpGrunt);
+        audioSource.pitch = 1f;
     }
 
     // Handle collisions
