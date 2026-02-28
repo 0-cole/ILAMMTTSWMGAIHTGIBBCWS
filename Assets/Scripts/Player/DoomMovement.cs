@@ -23,14 +23,15 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float airControl = 0.3f;
 
     [Header("Wall Jump")]
-    [SerializeField] private float wallStickDuration = 3f;
+    [SerializeField] private float wallSlideDuration = 3f;
+    [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] private float wallJumpForce = 15f;
     [SerializeField] private Camera playerCamera; // Assignment needed in Inspector or detecting Main Camera
 
-    private bool isWallSticking;
-    private float wallStickTimer;
+    private bool isWallSliding;
+    private float wallSlideTimer;
     private Vector3 wallNormal;
-    private float wallJumpCooldownTimer; // New: prevents instant re-stick after jump
+    private float wallJumpCooldownTimer;
     
     private CharacterController controller;
     private Vector3 velocity;
@@ -74,39 +75,37 @@ public class DoomMovement : MonoBehaviour
             AirMove(inputDirection);
 
             // Double Jump (GetButtonDown to prevent auto-double-jump)
-            if (Input.GetButtonDown("Jump") && jumpCount < maxJumps && !isWallSticking)
+            if (Input.GetButtonDown("Jump") && jumpCount < maxJumps && !isWallSliding)
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * doubleJumpMultiplier * gravity);
                 jumpCount = maxJumps;
             }
         }
         
-        // Apply gravity (if not sticking)
-        if (!isWallSticking)
+        // Apply gravity
+        velocity.y -= gravity * Time.deltaTime;
+
+        if (isWallSliding)
         {
-            velocity.y -= gravity * Time.deltaTime;
-        }
-        else
-        {
-            // Wall Stick Logic
-            velocity = Vector3.zero; // Stop all movement
-            wallStickTimer -= Time.deltaTime;
+            // Wall Slide Logic - slow the fall instead of freezing
+            velocity.x = 0;
+            velocity.z = 0;
+            velocity.y = Mathf.Max(velocity.y, -wallSlideSpeed);
+            wallSlideTimer -= Time.deltaTime;
 
             // Jump from wall
             if (Input.GetButtonDown("Jump"))
             {
-                // Launch in Camera Direction
                 velocity = playerCamera.transform.forward * wallJumpForce;
-                
-                isWallSticking = false;
-                wallJumpCooldownTimer = 0.5f; // New: 0.5s immunity to sticking
+                isWallSliding = false;
+                wallJumpCooldownTimer = 0.5f;
             }
 
-            // Fall off if timer ends
-            if (wallStickTimer <= 0)
+            // Stop sliding if timer ends
+            if (wallSlideTimer <= 0)
             {
-                isWallSticking = false;
-                wallJumpCooldownTimer = 0.5f; // Prevent immediate stick if just falling off? User didn't ask for this but it feels safe.
+                isWallSliding = false;
+                wallJumpCooldownTimer = 0.5f;
             }
         }
         
@@ -123,7 +122,7 @@ public class DoomMovement : MonoBehaviour
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f; // Small downward force to keep grounded
-            isWallSticking = false; // Reset wall stick on ground
+            isWallSliding = false; // Reset wall slide on ground
             jumpCount = 0; // Reset double jump
         }
     }
@@ -193,24 +192,18 @@ public class DoomMovement : MonoBehaviour
             }
 
             // Only stick if airborne, moving into wall, and not already sticking
-            if (!isGrounded && !isWallSticking && velocity.y < 0) // Only stick on way down? Or anytime? User said "jump on a wall". Let's say airborne.
+            if (!isGrounded && !isWallSliding && velocity.y < 0)
             {
-                // Check if moving INTO the wall
-                // float projection = Vector3.Dot(velocity, hit.normal); 
-                // Simply touching it while airborne should trigger it based on user description "when you jump on a wall"
-                
-                // Start Stick
-                // Only stick if Cooldown is over
                 if (wallJumpCooldownTimer <= 0) 
                 {
-                     isWallSticking = true;
-                     wallStickTimer = wallStickDuration;
+                     isWallSliding = true;
+                     wallSlideTimer = wallSlideDuration;
                      wallNormal = hit.normal;
                 }
             }
             
             // Standard Slide Logic (only if NOT sticking to allow sliding during movement? actually stick stops movement)
-            if (!isWallSticking)
+            if (!isWallSliding)
             {
                 float projection = Vector3.Dot(velocity, hit.normal);
                 if (projection < 0) velocity -= projection * hit.normal;
