@@ -33,6 +33,10 @@ public class DoomMovement : MonoBehaviour
     private Vector3 wallNormal;
     private float wallJumpCooldownTimer;
     
+    [Header("Audio")]
+    [SerializeField] private AudioClip doubleJumpGrunt;
+    private AudioSource audioSource;
+
     private CharacterController controller;
     private Vector3 velocity;
     private bool isGrounded;
@@ -40,6 +44,8 @@ public class DoomMovement : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         if (playerCamera == null) playerCamera = Camera.main;
     }
     
@@ -79,6 +85,7 @@ public class DoomMovement : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * doubleJumpMultiplier * gravity);
                 jumpCount = maxJumps;
+                if (doubleJumpGrunt != null) audioSource.PlayOneShot(doubleJumpGrunt);
             }
         }
         
