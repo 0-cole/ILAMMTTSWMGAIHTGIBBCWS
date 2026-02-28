@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29ad30a6eb8155b40bbc70d640d6316c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 60
+  maxHealth: 200
   currentHealth: 0
   fireballPrefab: {fileID: 1994264577554675325, guid: e06d7af0d80edf047bb87e88061affba, type: 3}
   fireRate: 2
@@ -178,6 +178,7 @@ MonoBehaviour:
   deathEffect: {fileID: 0}
   deathGrunt: {fileID: 8300000, guid: 48d89acf7c3c27546ba06468f035b35b, type: 3}
   attackGrunt: {fileID: 8300000, guid: 5bb0d15568fa56144b9fc0374b5fa4a6, type: 3}
+  spawnSound: {fileID: 8300000, guid: d28f1cf0e2e621949b38a5d915a442d6, type: 3}
   healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
   manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
   healthDropChance: 0.4

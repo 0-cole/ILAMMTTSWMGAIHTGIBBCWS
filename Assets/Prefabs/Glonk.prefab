@@ -326,6 +326,7 @@ MonoBehaviour:
   updatePathInterval: 0.2
   deathEffect: {fileID: 0}
   deathGrunt: {fileID: 8300000, guid: 48d89acf7c3c27546ba06468f035b35b, type: 3}
+  spawnSound: {fileID: 8300000, guid: a52429eaef43d2846a03aa452c415144, type: 3}
   healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
   manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
   healthDropChance: 0.3
