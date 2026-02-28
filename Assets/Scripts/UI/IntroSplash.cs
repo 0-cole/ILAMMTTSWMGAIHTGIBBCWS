@@ -25,10 +25,11 @@ public class IntroSplash : MonoBehaviour
     public GameObject mainMenuPanel;
 
     [Header("Timing")]
-    public float fadeInDuration = 0.5f;
-    public float holdDuration = 1.5f;
-    public float fadeOutDuration = 0.5f;
-    public float delayBetweenSplashes = 0.3f;
+    [Tooltip("Total duration of the entire intro sequence (overrides individual timings)")]
+    public float totalIntroDuration = 4f;
+    public float fadeInDuration = 0.4f;
+    public float fadeOutDuration = 0.3f;
+    public float delayBetweenSplashes = 0.2f;
 
     [Header("Options")]
     public bool allowSkip = true;
@@ -62,6 +63,13 @@ public class IntroSplash : MonoBehaviour
 
     private IEnumerator PlayIntro()
     {
+        // Calculate hold duration per panel to hit totalIntroDuration
+        int panelCount = 0;
+        foreach (var p in splashPanels) { if (p != null) panelCount++; }
+        float fixedTimePerPanel = fadeInDuration + fadeOutDuration;
+        float totalFixedTime = panelCount * fixedTimePerPanel + Mathf.Max(0, panelCount - 1) * delayBetweenSplashes;
+        float holdDuration = Mathf.Max(0.1f, (totalIntroDuration - totalFixedTime) / Mathf.Max(1, panelCount));
+
         foreach (var panel in splashPanels)
         {
             if (panel == null) continue;

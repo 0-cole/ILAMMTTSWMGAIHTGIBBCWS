@@ -2884,7 +2884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualizerClip: {fileID: 32900000, guid: 9519903e96653ec4cb3c0f5a20c52d9f, type: 3}
-  fadeDuration: 4
+  fadeDuration: 3.5
   innerRadius: 0.15
   outerRadius: 0.48
 --- !u!1 &479847995
@@ -9724,7 +9724,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a2e9a18c260a6a408d5ff6ed0d3029d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fadeDuration: 4
+  fadeDuration: 3.5
   targetVolume: 0.8
   fftWindow: 4
   beatThreshold: 1.5
