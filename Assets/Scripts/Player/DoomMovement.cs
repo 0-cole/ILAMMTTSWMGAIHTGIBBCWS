@@ -116,7 +116,13 @@ public class DoomMovement : MonoBehaviour
         }
 
         // Move the character
-        controller.Move(velocity * Time.deltaTime);
+        CollisionFlags flags = controller.Move(velocity * Time.deltaTime);
+
+        // Kill upward velocity on ceiling hit
+        if ((flags & CollisionFlags.Above) != 0 && velocity.y > 0)
+        {
+            velocity.y = 0;
+        }
         
         // Reset vertical velocity if grounded
         if (isGrounded && velocity.y < 0)
