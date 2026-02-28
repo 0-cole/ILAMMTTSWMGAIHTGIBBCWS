@@ -18,6 +18,9 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
     [Header("Effects")]
     [SerializeField] private GameObject deathEffect;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip deathGrunt;
+
     [Header("Pickups")]
     [SerializeField] private GameObject healthPickupPrefab;
     [SerializeField] private GameObject manaPickupPrefab;
@@ -236,6 +239,8 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         isDead = true;
+
+        if (deathGrunt != null) AudioSource.PlayClipAtPoint(deathGrunt, transform.position);
 
         if (deathEffect != null)
         {

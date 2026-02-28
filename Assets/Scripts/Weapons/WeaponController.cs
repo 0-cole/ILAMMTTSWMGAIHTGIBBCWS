@@ -40,6 +40,12 @@ public class WeaponController : MonoBehaviour
     public GameObject punchOverlay; 
     public LayerMask aimLayerMask; 
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip fireballSound;
+    [SerializeField] private AudioClip[] lightningCastSounds;
+    [SerializeField] private AudioClip lightningStrikeSound;
+    private AudioSource audioSource;
+
     [Header("Weapon System")]
     public float spawnOffset = 1.0f;
     public System.Collections.Generic.List<WeaponEntry> weapons = new System.Collections.Generic.List<WeaponEntry>();
@@ -51,6 +57,8 @@ public class WeaponController : MonoBehaviour
     void Start()
     {
         currentMana = maxMana;
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         InitializeWeapons();
         LoadWeapons();
         
@@ -331,6 +339,8 @@ public class WeaponController : MonoBehaviour
 
     void ShootFireball()
     {
+        if (fireballSound != null) audioSource.PlayOneShot(fireballSound);
+
         // Determine target point
         RaycastHit hit;
         Vector3 targetPoint;
@@ -369,6 +379,12 @@ public class WeaponController : MonoBehaviour
 
     void ShootLightning()
     {
+        // Play random cast sound variation
+        if (lightningCastSounds != null && lightningCastSounds.Length > 0)
+        {
+            audioSource.PlayOneShot(lightningCastSounds[Random.Range(0, lightningCastSounds.Length)]);
+        }
+
         // Settings
         int maxBounces = 50; 
         float currentDamage = lightningDamage; 
@@ -416,7 +432,7 @@ public class WeaponController : MonoBehaviour
             // Create the Runner to handle the Chain
             GameObject runnerObj = new GameObject("ChainLightningRunner_" + Time.time);
             ChainLightningRunner runner = runnerObj.AddComponent<ChainLightningRunner>();
-            runner.Initialize(currentPosition, currentTarget, currentDamage, maxBounces, bounceRange, bounceDelay, lightningEffectPrefab);
+            runner.Initialize(currentPosition, currentTarget, currentDamage, maxBounces, bounceRange, bounceDelay, lightningEffectPrefab, lightningStrikeSound);
         }
         else
         {

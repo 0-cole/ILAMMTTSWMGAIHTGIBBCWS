@@ -19,6 +19,10 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     [Header("Effects")]
     [SerializeField] private GameObject deathEffect;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip deathGrunt;
+    [SerializeField] private AudioClip attackGrunt;
+
     [Header("Pickups")]
     [SerializeField] private GameObject healthPickupPrefab;
     [SerializeField] private GameObject manaPickupPrefab;
@@ -86,6 +90,8 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     {
         if (fireballPrefab == null) return;
 
+        if (attackGrunt != null) AudioSource.PlayClipAtPoint(attackGrunt, transform.position);
+
         // Aim at the player
         Vector3 direction = (playerTransform.position - transform.position).normalized;
         
@@ -131,6 +137,8 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         isDead = true;
+
+        if (deathGrunt != null) AudioSource.PlayClipAtPoint(deathGrunt, transform.position);
 
         if (deathEffect != null)
         {

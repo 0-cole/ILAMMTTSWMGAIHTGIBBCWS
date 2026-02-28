@@ -9,14 +9,16 @@ public class ChainLightningRunner : MonoBehaviour
     private float range;
     private float delay;
     private GameObject effectPrefab;
+    private AudioClip strikeSound;
 
-    public void Initialize(Vector3 startPos, GameObject initialTarget, float dmg, int bounces, float bounceRange, float bounceDelay, GameObject prefab)
+    public void Initialize(Vector3 startPos, GameObject initialTarget, float dmg, int bounces, float bounceRange, float bounceDelay, GameObject prefab, AudioClip strike = null)
     {
         damage = dmg;
         maxBounces = bounces;
         range = bounceRange;
         delay = bounceDelay;
         effectPrefab = prefab;
+        strikeSound = strike;
 
         StartCoroutine(RunChain(startPos, initialTarget));
     }
@@ -60,6 +62,7 @@ public class ChainLightningRunner : MonoBehaviour
             if (damageable != null)
             {
                 damageable.TakeDamage(damage);
+                if (strikeSound != null) AudioSource.PlayClipAtPoint(strikeSound, currentTarget.transform.position);
                 SpawnSmite(currentTarget.transform.position);
             }
 
