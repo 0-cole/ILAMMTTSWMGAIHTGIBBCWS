@@ -36,6 +36,7 @@ public class DoomMovement : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip jumpGrunt;
     [SerializeField] private float doubleJumpPitchBoost = 1.3f;
+    [SerializeField] private float jumpGruntVolume = 0.15f;
     private AudioSource audioSource;
 
     private CharacterController controller;
@@ -195,7 +196,7 @@ public class DoomMovement : MonoBehaviour
     {
         if (jumpGrunt == null) return;
         audioSource.pitch = pitch;
-        audioSource.PlayOneShot(jumpGrunt);
+        audioSource.PlayOneShot(jumpGrunt, jumpGruntVolume);
         audioSource.pitch = 1f;
     }
 
