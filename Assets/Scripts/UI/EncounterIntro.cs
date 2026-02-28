@@ -31,6 +31,8 @@ public class EncounterIntro : MonoBehaviour
     [SerializeField] private float combatMusicVolume = 0.7f;
     [SerializeField] private AudioClip typeSlamClip;
     [SerializeField] private float typeSlamVolume = 0.15f;
+    [Tooltip("Optional: directly assign the ambience AudioSource to stop. If empty, uses LevelMusicManager.")]
+    [SerializeField] private AudioSource directAmbienceSource;
 
     [Header("Style")]
     [SerializeField] private Color textColor = new Color(1f, 0.2f, 0.2f, 1f);
@@ -90,9 +92,15 @@ public class EncounterIntro : MonoBehaviour
         foreach (var b in billboards) b.enabled = false;
 
         // Stop ambience immediately
-        if (ambienceSource != null)
+        // Use direct reference first, then passed parameter, then LevelMusicManager fallback
+        AudioSource ambToStop = directAmbienceSource != null ? directAmbienceSource : ambienceSource;
+        if (ambToStop != null)
         {
-            ambienceSource.Stop();
+            ambToStop.Stop();
+        }
+        else if (LevelMusicManager.Instance != null)
+        {
+            LevelMusicManager.Instance.StopAmbience();
         }
 
         // Setup text
