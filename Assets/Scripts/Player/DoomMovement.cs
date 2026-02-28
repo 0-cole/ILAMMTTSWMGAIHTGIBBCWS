@@ -21,7 +21,7 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float airControl = 0.3f;
 
     [Header("Wall Jump")]
-    [SerializeField] private float wallSlideDuration = 3f;
+    [SerializeField] private float wallSlideDuration = 2f;
     [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] private float wallJumpForce = 15f;
     [SerializeField] private Camera playerCamera; // Assignment needed in Inspector or detecting Main Camera
@@ -47,6 +47,9 @@ public class DoomMovement : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         if (playerCamera == null) playerCamera = Camera.main;
+
+        // Force wall slide duration to override stale serialized values
+        wallSlideDuration = 2f;
     }
     
     void Update()
