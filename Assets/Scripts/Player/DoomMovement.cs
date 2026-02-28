@@ -87,9 +87,11 @@ public class DoomMovement : MonoBehaviour
 
         if (isWallSliding)
         {
-            // Wall Slide Logic - slow the fall instead of freezing
-            velocity.x = 0;
-            velocity.z = 0;
+            // Wall Slide Logic - allow lateral movement along the wall
+            Vector3 slideRight = Vector3.Cross(wallNormal, Vector3.up).normalized;
+            float lateral = Input.GetAxisRaw("Horizontal");
+            velocity.x = slideRight.x * lateral * moveSpeed;
+            velocity.z = slideRight.z * lateral * moveSpeed;
             velocity.y = Mathf.Max(velocity.y, -wallSlideSpeed);
             wallSlideTimer -= Time.deltaTime;
 
