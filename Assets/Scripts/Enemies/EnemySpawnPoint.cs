@@ -21,6 +21,9 @@ public class EnemySpawnPoint : MonoBehaviour
     [Tooltip("Must match the SpawnTrigger's spawnGroupId")]
     public int spawnGroupId = 0;
 
+    [Tooltip("Wave number within this group (1 = first wave, 2 = second, etc.)")]
+    public int waveNumber = 1;
+
     [Header("Prefabs")]
     public GameObject glonkPrefab;
     public GameObject billboardFireballPrefab;
@@ -39,10 +42,11 @@ public class EnemySpawnPoint : MonoBehaviour
 
     /// <summary>
     /// Called by SpawnTrigger to spawn the enemy at this point.
+    /// Returns the spawned GameObject so it can be tracked.
     /// </summary>
-    public void SpawnEnemy()
+    public GameObject SpawnEnemy()
     {
-        if (hasSpawned) return;
+        if (hasSpawned) return null;
         hasSpawned = true;
 
         // Smoke plume
@@ -54,27 +58,29 @@ public class EnemySpawnPoint : MonoBehaviour
 
         if (enemyType == EnemyType.Glonk)
         {
-            SpawnGlonk();
+            return SpawnGlonk();
         }
         else if (enemyType == EnemyType.Billboard)
         {
-            SpawnBillboard();
+            return SpawnBillboard();
         }
+        return null;
     }
 
-    private void SpawnGlonk()
+    private GameObject SpawnGlonk()
     {
         if (glonkPrefab == null)
         {
             Debug.LogError($"[EnemySpawnPoint] No Glonk prefab on {gameObject.name}!");
-            return;
+            return null;
         }
 
         GameObject enemy = Instantiate(glonkPrefab, transform.position, transform.rotation);
         ConfigureDrops(enemy);
+        return enemy;
     }
 
-    private void SpawnBillboard()
+    private GameObject SpawnBillboard()
     {
         // Reuse BillboardSpawner's approach but one-shot
         GameObject enemy = new GameObject("Billboard Enemy");
@@ -128,6 +134,8 @@ public class EnemySpawnPoint : MonoBehaviour
                 canvasCopy.transform.localRotation = Quaternion.identity;
             }
         }
+
+        return enemy;
     }
 
     private void ConfigureDrops(GameObject enemy)
@@ -193,7 +201,7 @@ public class EnemySpawnPoint : MonoBehaviour
 
 #if UNITY_EDITOR
         UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f,
-            $"Group {spawnGroupId} | {enemyType}");
+            $"Group {spawnGroupId} | Wave {waveNumber} | {enemyType}");
 #endif
     }
 }

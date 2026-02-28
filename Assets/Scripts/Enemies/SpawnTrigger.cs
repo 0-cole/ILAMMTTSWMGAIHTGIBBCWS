@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Place this on a trigger collider. When the player enters for the first time,
-/// it spawns all EnemySpawnPoints with a matching spawnGroupId, then destroys itself.
+/// it spawns enemies wave by wave. Each wave waits for all enemies to die before the next spawns.
 /// Optionally plays an ULTRAKILL-style encounter intro before spawning.
 /// </summary>
 [RequireComponent(typeof(Collider))]
@@ -14,8 +16,10 @@ public class SpawnTrigger : MonoBehaviour
     public int spawnGroupId = 0;
 
     [Header("Timing")]
-    [Tooltip("Delay between each enemy spawn in the group")]
+    [Tooltip("Delay between each enemy spawn in a wave")]
     public float delayBetweenSpawns = 0.3f;
+    [Tooltip("Delay after a wave is cleared before the next wave spawns")]
+    public float delayBetweenWaves = 1.0f;
 
     [Header("Visual")]
     [Tooltip("Optional: destroy after this delay to let particles finish")]
@@ -29,7 +33,6 @@ public class SpawnTrigger : MonoBehaviour
 
     void Start()
     {
-        // Ensure collider is a trigger
         Collider col = GetComponent<Collider>();
         col.isTrigger = true;
     }
@@ -43,41 +46,60 @@ public class SpawnTrigger : MonoBehaviour
 
         if (encounterIntro != null)
         {
-            // Get audio sources from LevelMusicManager
             AudioSource ambience = LevelMusicManager.Instance != null ? LevelMusicManager.Instance.AmbienceSource : null;
             AudioSource combat = LevelMusicManager.Instance != null ? LevelMusicManager.Instance.CombatSource : null;
 
-            // Play intro, then spawn enemies when it finishes
             encounterIntro.PlayIntro(ambience, combat, () =>
             {
-                StartCoroutine(SpawnSequence());
+                StartCoroutine(WaveSequence());
             });
         }
         else
         {
-            StartCoroutine(SpawnSequence());
+            StartCoroutine(WaveSequence());
         }
     }
 
-    private IEnumerator SpawnSequence()
+    private IEnumerator WaveSequence()
     {
-        // Find all spawn points in the scene with matching group id
         EnemySpawnPoint[] allPoints = FindObjectsByType<EnemySpawnPoint>(FindObjectsSortMode.None);
 
-        int spawnCount = 0;
-        foreach (var point in allPoints)
+        // Get all matching points grouped by wave
+        var waveGroups = allPoints
+            .Where(p => p.spawnGroupId == spawnGroupId && !p.hasSpawned)
+            .GroupBy(p => p.waveNumber)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        foreach (var wave in waveGroups)
         {
-            if (point.spawnGroupId == spawnGroupId && !point.hasSpawned)
+            List<GameObject> waveEnemies = new List<GameObject>();
+
+            // Spawn all enemies in this wave
+            foreach (var point in wave)
             {
-                point.SpawnEnemy();
-                spawnCount++;
+                GameObject enemy = point.SpawnEnemy();
+                if (enemy != null)
+                    waveEnemies.Add(enemy);
                 yield return new WaitForSeconds(delayBetweenSpawns);
             }
+
+            Debug.Log($"[SpawnTrigger] Group {spawnGroupId}, Wave {wave.Key}: Spawned {waveEnemies.Count} enemies.");
+
+            // Wait for all enemies in this wave to die
+            while (waveEnemies.Any(e => e != null))
+            {
+                yield return new WaitForSeconds(0.25f);
+            }
+
+            Debug.Log($"[SpawnTrigger] Group {spawnGroupId}, Wave {wave.Key}: Cleared!");
+
+            // Brief pause before next wave
+            yield return new WaitForSeconds(delayBetweenWaves);
         }
 
-        Debug.Log($"[SpawnTrigger] Group {spawnGroupId}: Spawned {spawnCount} enemies.");
+        Debug.Log($"[SpawnTrigger] Group {spawnGroupId}: All waves complete!");
 
-        // Wait a moment then destroy the trigger
         yield return new WaitForSeconds(selfDestroyDelay);
         Destroy(gameObject);
     }
