@@ -1,71 +1,69 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
-/// Shakes the title text forward (Z-axis scale pulse) on music beats.
-/// Attach to the title text RectTransform. Does NOT affect menu buttons.
-/// 
-/// The "forward" shake is achieved by pulsing the scale — making the title
-/// briefly punch outward toward the camera on each beat.
+/// Flashes the title screen white on music beats with a smooth fade out.
+/// Attach to the title Image. Creates an overlay Image for the flash effect.
+/// Also ensures the title image stretches to fill the screen.
 /// </summary>
 public class TitleBeatShake : MonoBehaviour
 {
-    [Header("Shake Settings")]
-    [SerializeField] private float shakeDecay = 8f;
-    [SerializeField] private float scalePunch = 1.12f;
+    [Header("Flash Settings")]
+    [SerializeField] private float flashFadeSpeed = 3f;
+    [SerializeField] private float flashIntensity = 0.6f;
+    [SerializeField] private Color flashColor = Color.white;
 
-    [Header("Optional Position Shake")]
-    [SerializeField] private bool positionShake = true;
-    [SerializeField] private float posShakeAmount = 5f;
-
-    private Vector3 originalPosition;
-    private Vector3 originalScale;
-    private float currentShake;
-    private RectTransform rectTransform;
+    private Image flashOverlay;
+    private float currentFlash;
 
     void Start()
     {
-        rectTransform = GetComponent<RectTransform>();
-        if (rectTransform != null)
+        // Ensure title image stretches to fill screen
+        RectTransform rt = GetComponent<RectTransform>();
+        if (rt != null)
         {
-            originalPosition = rectTransform.anchoredPosition3D;
-            originalScale = rectTransform.localScale;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
         }
+
+        // Create flash overlay as a sibling on top
+        GameObject flashObj = new GameObject("BeatFlashOverlay");
+        flashObj.transform.SetParent(transform.parent, false);
+        flashObj.transform.SetAsLastSibling();
+
+        RectTransform flashRT = flashObj.AddComponent<RectTransform>();
+        flashRT.anchorMin = Vector2.zero;
+        flashRT.anchorMax = Vector2.one;
+        flashRT.offsetMin = Vector2.zero;
+        flashRT.offsetMax = Vector2.zero;
+
+        flashOverlay = flashObj.AddComponent<Image>();
+        flashOverlay.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0f);
+        flashOverlay.raycastTarget = false;
     }
 
     void Update()
     {
-        if (rectTransform == null) return;
+        if (flashOverlay == null) return;
 
         // Check for beat
         if (TitleScreenMusic.Instance != null && TitleScreenMusic.Instance.IsBeat)
         {
-            currentShake = 1f;
+            currentFlash = flashIntensity;
         }
 
-        // Apply shake
-        if (currentShake > 0.01f)
+        // Fade out flash
+        if (currentFlash > 0.001f)
         {
-            currentShake = Mathf.Lerp(currentShake, 0f, Time.deltaTime * shakeDecay);
-
-            // Scale punch (forward feel)
-            float s = Mathf.Lerp(1f, scalePunch, currentShake);
-            rectTransform.localScale = originalScale * s;
-
-            // Optional subtle position shake
-            if (positionShake)
-            {
-                Vector3 offset = new Vector3(
-                    Random.Range(-1f, 1f) * posShakeAmount * currentShake,
-                    Random.Range(-1f, 1f) * posShakeAmount * currentShake * 0.5f,
-                    0f
-                );
-                rectTransform.anchoredPosition3D = originalPosition + offset;
-            }
+            currentFlash = Mathf.Lerp(currentFlash, 0f, Time.deltaTime * flashFadeSpeed);
+            flashOverlay.color = new Color(flashColor.r, flashColor.g, flashColor.b, currentFlash);
         }
         else
         {
-            rectTransform.localScale = originalScale;
-            rectTransform.anchoredPosition3D = originalPosition;
+            currentFlash = 0f;
+            flashOverlay.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0f);
         }
     }
 }
