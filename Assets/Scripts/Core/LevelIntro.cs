@@ -55,6 +55,7 @@ public class LevelIntro : MonoBehaviour
     private float fallSpeed = 0f;
     private bool falling = true;
     private bool landed = false;
+    private float landingY;
 
     void Start()
     {
@@ -80,14 +81,17 @@ public class LevelIntro : MonoBehaviour
         Cursor.visible = false;
 
         // Teleport player above landing zone
+        landingY = playerMove.transform.position.y;
         controller.enabled = false;
         playerMove.transform.position += Vector3.up * spawnHeight;
         controller.enabled = true;
 
-        // Spawn chute around player
+        // Spawn chute around player (disable all colliders so CharacterController falls through)
         if (chutePrefab != null)
         {
             chuteInstance = Instantiate(chutePrefab, playerMove.transform.position + chuteOffset, Quaternion.identity);
+            foreach (var col in chuteInstance.GetComponentsInChildren<Collider>())
+                col.enabled = false;
         }
 
         // Create a black cap above the chute so looking up shows infinite darkness
@@ -141,8 +145,8 @@ public class LevelIntro : MonoBehaviour
         if (audioSource != null && windLoop != null)
             audioSource.volume = Mathf.Lerp(windVolume * 0.3f, windVolume, fallSpeed / maxFallSpeed);
 
-        // Landing detection
-        if (controller.isGrounded)
+        // Landing detection — grounded check OR passed below landing height
+        if (controller.isGrounded || playerMove.transform.position.y <= landingY)
         {
             StartCoroutine(LandingSequence());
         }
@@ -152,6 +156,12 @@ public class LevelIntro : MonoBehaviour
     {
         falling = false;
         landed = true;
+
+        // Snap player to landing position
+        controller.enabled = false;
+        var pos = playerMove.transform.position;
+        playerMove.transform.position = new Vector3(pos.x, landingY, pos.z);
+        controller.enabled = true;
 
         // Stop wind
         if (audioSource != null)
