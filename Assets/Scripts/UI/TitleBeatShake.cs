@@ -1,69 +1,52 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
-/// Flashes the title screen white on music beats with a smooth fade out.
-/// Attach to the title Image. Creates an overlay Image for the flash effect.
-/// Also ensures the title image stretches to fill the screen.
+/// Subtle scale pulse on the title image on music beats.
+/// Attach to the title Image RectTransform.
 /// </summary>
 public class TitleBeatShake : MonoBehaviour
 {
-    [Header("Flash Settings")]
-    [SerializeField] private float flashFadeSpeed = 3f;
-    [SerializeField] private float flashIntensity = 0.6f;
-    [SerializeField] private Color flashColor = Color.white;
+    [Header("Shake Settings")]
+    [SerializeField] private float shakeDecay = 10f;
+    [SerializeField] private float scalePunch = 1.03f;
 
-    private Image flashOverlay;
-    private float currentFlash;
+    private Vector3 originalScale;
+    private float currentShake;
+    private RectTransform rectTransform;
 
     void Start()
     {
-        // Ensure title image stretches to fill screen
-        RectTransform rt = GetComponent<RectTransform>();
-        if (rt != null)
+        rectTransform = GetComponent<RectTransform>();
+        if (rectTransform != null)
         {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
+            originalScale = rectTransform.localScale;
+
+            // Stretch to fill screen
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
         }
-
-        // Create flash overlay as a sibling on top
-        GameObject flashObj = new GameObject("BeatFlashOverlay");
-        flashObj.transform.SetParent(transform.parent, false);
-        flashObj.transform.SetAsLastSibling();
-
-        RectTransform flashRT = flashObj.AddComponent<RectTransform>();
-        flashRT.anchorMin = Vector2.zero;
-        flashRT.anchorMax = Vector2.one;
-        flashRT.offsetMin = Vector2.zero;
-        flashRT.offsetMax = Vector2.zero;
-
-        flashOverlay = flashObj.AddComponent<Image>();
-        flashOverlay.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0f);
-        flashOverlay.raycastTarget = false;
     }
 
     void Update()
     {
-        if (flashOverlay == null) return;
+        if (rectTransform == null) return;
 
-        // Check for beat
         if (TitleScreenMusic.Instance != null && TitleScreenMusic.Instance.IsBeat)
         {
-            currentFlash = flashIntensity;
+            currentShake = 1f;
         }
 
-        // Fade out flash
-        if (currentFlash > 0.001f)
+        if (currentShake > 0.001f)
         {
-            currentFlash = Mathf.Lerp(currentFlash, 0f, Time.deltaTime * flashFadeSpeed);
-            flashOverlay.color = new Color(flashColor.r, flashColor.g, flashColor.b, currentFlash);
+            currentShake = Mathf.Lerp(currentShake, 0f, Time.deltaTime * shakeDecay);
+            float s = Mathf.Lerp(1f, scalePunch, currentShake);
+            rectTransform.localScale = originalScale * s;
         }
         else
         {
-            currentFlash = 0f;
-            flashOverlay.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0f);
+            rectTransform.localScale = originalScale;
         }
     }
 }

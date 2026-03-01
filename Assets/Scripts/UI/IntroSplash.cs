@@ -35,6 +35,10 @@ public class IntroSplash : MonoBehaviour
     public bool allowSkip = true;
     public KeyCode skipKey = KeyCode.Space;
 
+    [Header("Flash on Reveal")]
+    public float flashDuration = 0.8f;
+    public Color flashColor = Color.white;
+
     /// <summary>
     /// Set this to true before loading the MainMenu scene to skip the intro.
     /// PauseManager.ReturnToMainMenu sets this automatically.
@@ -124,11 +128,47 @@ public class IntroSplash : MonoBehaviour
                 yield return new WaitForSeconds(delayBetweenSplashes);
         }
 
-        // Show main menu and destroy the entire intro overlay immediately
+        // Show main menu
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(true);
 
+        // White flash on reveal
+        yield return StartCoroutine(FlashScreen());
+
         Destroy(gameObject);
+    }
+
+    private IEnumerator FlashScreen()
+    {
+        // Create a fullscreen white overlay on the main menu's canvas
+        Canvas targetCanvas = mainMenuPanel != null ? mainMenuPanel.GetComponentInParent<Canvas>() : null;
+        if (targetCanvas == null) yield break;
+
+        GameObject flashObj = new GameObject("IntroFlash");
+        flashObj.transform.SetParent(targetCanvas.transform, false);
+        flashObj.transform.SetAsLastSibling();
+
+        RectTransform flashRT = flashObj.AddComponent<RectTransform>();
+        flashRT.anchorMin = Vector2.zero;
+        flashRT.anchorMax = Vector2.one;
+        flashRT.offsetMin = Vector2.zero;
+        flashRT.offsetMax = Vector2.zero;
+
+        Image flashImg = flashObj.AddComponent<Image>();
+        flashImg.color = flashColor;
+        flashImg.raycastTarget = false;
+
+        // Fade out
+        float t = 0f;
+        while (t < flashDuration)
+        {
+            t += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, t / flashDuration);
+            flashImg.color = new Color(flashColor.r, flashColor.g, flashColor.b, alpha);
+            yield return null;
+        }
+
+        Destroy(flashObj);
     }
 
     private IEnumerator Fade(CanvasGroup group, float from, float to, float duration)
