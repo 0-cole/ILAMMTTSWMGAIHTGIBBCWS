@@ -98,24 +98,28 @@ public class LevelIntro : MonoBehaviour
         // Spawn chute segments stacked vertically around the player
         if (chutePrefab != null && chuteSegmentCount > 0)
         {
-            // Auto-compute the prefab's visual center so we can offset segments properly
+            // Measure the prefab's visual center and height
             Vector3 prefabCenter = ComputePrefabCenter(chutePrefab);
 
+            float playerX = playerMove.transform.position.x;
             float playerY = playerMove.transform.position.y;
-            Vector3 playerXZ = new Vector3(playerMove.transform.position.x, 0f, playerMove.transform.position.z);
+            float playerZ = playerMove.transform.position.z;
 
-            // Offset so the prefab's visual center lines up with the player's XZ
-            Vector3 centerOffset = new Vector3(-prefabCenter.x, 0f, -prefabCenter.z) + chuteOffset;
-
-            // Place segments so the player starts inside one of the upper segments
-            float topY = playerY + chuteSegmentHeight;
+            // Stack segments so their visual centers align with the player XZ,
+            // stacking upward from above the player
+            float topVisualY = playerY + chuteSegmentHeight;
             for (int i = 0; i < chuteSegmentCount; i++)
             {
-                float segY = topY - (i * chuteSegmentHeight);
-                Vector3 pos = playerXZ + centerOffset + Vector3.up * segY;
-                GameObject seg = Instantiate(chutePrefab, pos, Quaternion.identity);
+                float visualCenterY = topVisualY - (i * chuteSegmentHeight);
+                // Position root so that visual center ends up at desired location
+                Vector3 rootPos = new Vector3(
+                    playerX - prefabCenter.x,
+                    visualCenterY - prefabCenter.y,
+                    playerZ - prefabCenter.z
+                ) + chuteOffset;
+
+                GameObject seg = Instantiate(chutePrefab, rootPos, Quaternion.identity);
                 seg.name = $"ChuteSegment_{i}";
-                // Disable colliders so CharacterController falls through
                 foreach (var col in seg.GetComponentsInChildren<Collider>())
                     col.enabled = false;
                 chuteSegments.Add(seg);
@@ -238,6 +242,7 @@ public class LevelIntro : MonoBehaviour
         }
 
         Vector3 center = bounds.center;
+        Debug.Log($"[LevelIntro] Prefab bounds center: {center}, size: {bounds.size}, segment height: {chuteSegmentHeight:F1}");
         Destroy(temp);
         return center;
     }
