@@ -1,15 +1,17 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
-/// ULTRAKILL-style level intro: player drops from above with wind SFX,
-/// lands with a crash + camera shake + freeze frame, then gameplay begins.
+/// ULTRAKILL-style level intro: player drops from above through an infinite-scrolling
+/// chute with wind SFX, lands with a crash + camera shake + freeze frame, then gameplay begins.
 ///
 /// Setup:
 /// 1. Create an empty GameObject in your level, add this script
 /// 2. Position it where the player should LAND (it teleports the player up from here)
 /// 3. Assign wind loop and crash SFX in Inspector
-/// 4. (Optional) Assign a chute prefab — it follows the player during the fall so it looks infinite
+/// 4. (Optional) Assign a chute prefab — multiple copies stack vertically and recycle
+///    to create an infinite falling shaft effect
 /// </summary>
 public class LevelIntro : MonoBehaviour
 {
@@ -30,9 +32,14 @@ public class LevelIntro : MonoBehaviour
     [SerializeField] private float crashVolume = 0.9f;
 
     [Header("Chute (Optional)")]
-    [Tooltip("A tall tube prefab (4 walls + torches). It follows the player during the fall.")]
+    [Tooltip("A tube segment prefab (4 walls). Multiple copies stack and recycle to look infinite.")]
     [SerializeField] private GameObject chutePrefab;
+    [Tooltip("XZ offset so the chute centers on the player (adjust if prefab pivot isn't centered).")]
     [SerializeField] private Vector3 chuteOffset = Vector3.zero;
+    [Tooltip("Height of one chute segment. Must match the actual prefab height.")]
+    [SerializeField] private float chuteSegmentHeight = 10f;
+    [Tooltip("How many segments to spawn (3-5 is enough to fill the view).")]
+    [SerializeField] private int chuteSegmentCount = 4;
 
     [Header("Hole Seal")]
     [Tooltip("Optional prefab to spawn over the hole after landing (e.g. a ceiling slab matching the room).")]
@@ -43,14 +50,14 @@ public class LevelIntro : MonoBehaviour
     [Header("Void Cap")]
     [Tooltip("Size of the auto-generated black cap at the top of the chute (X=width, Y=depth). Set to 0 to disable.")]
     [SerializeField] private Vector2 voidCapSize = new Vector2(6f, 6f);
-    [Tooltip("How far above the chute center to place the void cap")]
+    [Tooltip("How far above the player to place the void cap")]
     [SerializeField] private float voidCapHeight = 15f;
 
     private DoomMovement playerMove;
     private MouseLook playerLook;
     private CharacterController controller;
     private AudioSource audioSource;
-    private GameObject chuteInstance;
+    private List<GameObject> chuteSegments = new List<GameObject>();
     private GameObject voidCap;
     private float fallSpeed = 0f;
     private bool falling = true;
@@ -80,18 +87,33 @@ public class LevelIntro : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Teleport player above landing zone
+        // Remember where the player should land
         landingY = playerMove.transform.position.y;
+
+        // Teleport player above landing zone
         controller.enabled = false;
         playerMove.transform.position += Vector3.up * spawnHeight;
         controller.enabled = true;
 
-        // Spawn chute around player (disable all colliders so CharacterController falls through)
-        if (chutePrefab != null)
+        // Spawn chute segments stacked vertically around the player
+        if (chutePrefab != null && chuteSegmentCount > 0)
         {
-            chuteInstance = Instantiate(chutePrefab, playerMove.transform.position + chuteOffset, Quaternion.identity);
-            foreach (var col in chuteInstance.GetComponentsInChildren<Collider>())
-                col.enabled = false;
+            float playerY = playerMove.transform.position.y;
+            Vector3 playerXZ = new Vector3(playerMove.transform.position.x, 0f, playerMove.transform.position.z);
+
+            // Place segments so the player starts inside one of the upper segments
+            float topY = playerY + chuteSegmentHeight;
+            for (int i = 0; i < chuteSegmentCount; i++)
+            {
+                float segY = topY - (i * chuteSegmentHeight);
+                Vector3 pos = playerXZ + chuteOffset + Vector3.up * segY;
+                GameObject seg = Instantiate(chutePrefab, pos, Quaternion.identity);
+                seg.name = $"ChuteSegment_{i}";
+                // Disable colliders so CharacterController falls through
+                foreach (var col in seg.GetComponentsInChildren<Collider>())
+                    col.enabled = false;
+                chuteSegments.Add(seg);
+            }
         }
 
         // Create a black cap above the chute so looking up shows infinite darkness
@@ -102,7 +124,6 @@ public class LevelIntro : MonoBehaviour
             Destroy(voidCap.GetComponent<Collider>());
             voidCap.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // face downward
             voidCap.transform.localScale = new Vector3(voidCapSize.x, voidCapSize.y, 1f);
-            // Unlit black material
             var renderer = voidCap.GetComponent<Renderer>();
             renderer.material = new Material(Shader.Find("Unlit/Color"));
             renderer.material.color = Color.black;
@@ -133,9 +154,8 @@ public class LevelIntro : MonoBehaviour
         // Move player down
         controller.Move(Vector3.down * fallSpeed * Time.deltaTime);
 
-        // Keep chute centered on player
-        if (chuteInstance != null)
-            chuteInstance.transform.position = playerMove.transform.position + chuteOffset;
+        // Recycle chute segments: when the player falls below a segment, move it to the bottom
+        RecycleChuteSegments();
 
         // Keep void cap above player
         if (voidCap != null)
@@ -152,6 +172,38 @@ public class LevelIntro : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Infinite scroll: when the player falls past the top segment, move it below the bottom one.
+    /// </summary>
+    private void RecycleChuteSegments()
+    {
+        if (chuteSegments.Count < 2) return;
+
+        float playerY = playerMove.transform.position.y;
+
+        // Find the highest and lowest segment
+        int highestIdx = 0;
+        int lowestIdx = 0;
+        for (int i = 1; i < chuteSegments.Count; i++)
+        {
+            if (chuteSegments[i].transform.position.y > chuteSegments[highestIdx].transform.position.y)
+                highestIdx = i;
+            if (chuteSegments[i].transform.position.y < chuteSegments[lowestIdx].transform.position.y)
+                lowestIdx = i;
+        }
+
+        float highestY = chuteSegments[highestIdx].transform.position.y;
+        float lowestY = chuteSegments[lowestIdx].transform.position.y;
+
+        // If player is more than one segment below the highest, recycle it to below the lowest
+        if (playerY < highestY - chuteSegmentHeight)
+        {
+            Vector3 pos = chuteSegments[lowestIdx].transform.position;
+            pos.y -= chuteSegmentHeight;
+            chuteSegments[highestIdx].transform.position = pos;
+        }
+    }
+
     private IEnumerator LandingSequence()
     {
         falling = false;
@@ -165,9 +217,7 @@ public class LevelIntro : MonoBehaviour
 
         // Stop wind
         if (audioSource != null)
-        {
             audioSource.Stop();
-        }
 
         // Crash sound
         if (crashSound != null && audioSource != null)
@@ -181,9 +231,12 @@ public class LevelIntro : MonoBehaviour
         if (shake != null)
             shake.Shake(landingShakeDuration, landingShakeMagnitude);
 
-        // Destroy chute and void cap
-        if (chuteInstance != null)
-            Destroy(chuteInstance);
+        // Destroy all chute segments and void cap
+        foreach (var seg in chuteSegments)
+        {
+            if (seg != null) Destroy(seg);
+        }
+        chuteSegments.Clear();
         if (voidCap != null)
             Destroy(voidCap);
 
