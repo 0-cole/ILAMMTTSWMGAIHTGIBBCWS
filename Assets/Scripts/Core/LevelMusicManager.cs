@@ -25,6 +25,8 @@ public class LevelMusicManager : MonoBehaviour
     public AudioSource AmbienceSource => ambienceSource;
     public AudioSource CombatSource => combatSource;
 
+    private float combatBaseVolume = 0.7f;
+
     void Awake()
     {
         Instance = this;
@@ -39,13 +41,15 @@ public class LevelMusicManager : MonoBehaviour
         }
     }
 
+    private float MusicMultiplier => GameSettings.Instance != null ? GameSettings.Instance.MusicVolume : 1f;
+
     void Start()
     {
         // Start ambient music
         if (ambienceClip != null)
         {
             ambienceSource.clip = ambienceClip;
-            ambienceSource.volume = ambienceVolume;
+            ambienceSource.volume = ambienceVolume * MusicMultiplier;
             ambienceSource.loop = true;
             ambienceSource.ignoreListenerPause = false;
             ambienceSource.Play();
@@ -54,6 +58,17 @@ public class LevelMusicManager : MonoBehaviour
         {
             combatSource.ignoreListenerPause = false;
         }
+
+        if (GameSettings.Instance != null)
+            GameSettings.Instance.OnSettingsChanged += ApplyMusicVolume;
+    }
+
+    private void ApplyMusicVolume()
+    {
+        if (ambienceSource != null && ambienceSource.isPlaying)
+            ambienceSource.volume = ambienceVolume * MusicMultiplier;
+        if (combatSource != null && combatSource.isPlaying)
+            combatSource.volume = combatBaseVolume * MusicMultiplier;
     }
 
     public void StopAmbience()
@@ -66,8 +81,9 @@ public class LevelMusicManager : MonoBehaviour
     {
         if (combatSource != null && clip != null)
         {
+            combatBaseVolume = volume;
             combatSource.clip = clip;
-            combatSource.volume = volume;
+            combatSource.volume = volume * MusicMultiplier;
             combatSource.loop = true;
             combatSource.Play();
         }
@@ -75,6 +91,8 @@ public class LevelMusicManager : MonoBehaviour
 
     void OnDestroy()
     {
+        if (GameSettings.Instance != null)
+            GameSettings.Instance.OnSettingsChanged -= ApplyMusicVolume;
         if (Instance == this) Instance = null;
     }
 }

@@ -50,15 +50,27 @@ public class TitleScreenMusic : MonoBehaviour
     void Start()
     {
         audioSource.Play();
+
+        if (GameSettings.Instance != null)
+            GameSettings.Instance.OnSettingsChanged += ApplyMusicVolume;
+    }
+
+    private float EffectiveVolume => targetVolume * (GameSettings.Instance != null ? GameSettings.Instance.MusicVolume : 1f);
+
+    private void ApplyMusicVolume()
+    {
+        // Only override if fade is complete
+        if (fadeTimer >= fadeDuration)
+            audioSource.volume = EffectiveVolume;
     }
 
     void Update()
     {
-        // Fade in
+        // Fade in (scaled by music volume setting)
         if (fadeTimer < fadeDuration)
         {
             fadeTimer += Time.deltaTime;
-            audioSource.volume = Mathf.Lerp(0f, targetVolume, fadeTimer / fadeDuration);
+            audioSource.volume = Mathf.Lerp(0f, EffectiveVolume, fadeTimer / fadeDuration);
         }
 
         // Get spectrum (1024 samples for better frequency resolution)
@@ -114,6 +126,8 @@ public class TitleScreenMusic : MonoBehaviour
 
     void OnDestroy()
     {
+        if (GameSettings.Instance != null)
+            GameSettings.Instance.OnSettingsChanged -= ApplyMusicVolume;
         if (Instance == this) Instance = null;
     }
 }
