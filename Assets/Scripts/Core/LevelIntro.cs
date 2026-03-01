@@ -98,15 +98,21 @@ public class LevelIntro : MonoBehaviour
         // Spawn chute segments stacked vertically around the player
         if (chutePrefab != null && chuteSegmentCount > 0)
         {
+            // Auto-compute the prefab's visual center so we can offset segments properly
+            Vector3 prefabCenter = ComputePrefabCenter(chutePrefab);
+
             float playerY = playerMove.transform.position.y;
             Vector3 playerXZ = new Vector3(playerMove.transform.position.x, 0f, playerMove.transform.position.z);
+
+            // Offset so the prefab's visual center lines up with the player's XZ
+            Vector3 centerOffset = new Vector3(-prefabCenter.x, 0f, -prefabCenter.z) + chuteOffset;
 
             // Place segments so the player starts inside one of the upper segments
             float topY = playerY + chuteSegmentHeight;
             for (int i = 0; i < chuteSegmentCount; i++)
             {
                 float segY = topY - (i * chuteSegmentHeight);
-                Vector3 pos = playerXZ + chuteOffset + Vector3.up * segY;
+                Vector3 pos = playerXZ + centerOffset + Vector3.up * segY;
                 GameObject seg = Instantiate(chutePrefab, pos, Quaternion.identity);
                 seg.name = $"ChuteSegment_{i}";
                 // Disable colliders so CharacterController falls through
@@ -202,6 +208,38 @@ public class LevelIntro : MonoBehaviour
             pos.y -= chuteSegmentHeight;
             chuteSegments[highestIdx].transform.position = pos;
         }
+    }
+
+    /// <summary>
+    /// Computes the center of all renderers in a prefab (in local space).
+    /// Used to auto-center the chute on the player regardless of prefab pivot.
+    /// </summary>
+    private Vector3 ComputePrefabCenter(GameObject prefab)
+    {
+        // Temporarily instantiate to measure bounds
+        GameObject temp = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+        var renderers = temp.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+        {
+            Destroy(temp);
+            return Vector3.zero;
+        }
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+
+        // Also auto-detect segment height if left at default
+        float measuredHeight = bounds.size.y;
+        if (measuredHeight > 0.1f && Mathf.Abs(chuteSegmentHeight - 10f) < 0.01f)
+        {
+            chuteSegmentHeight = measuredHeight;
+            Debug.Log($"[LevelIntro] Auto-detected chute segment height: {chuteSegmentHeight:F1}");
+        }
+
+        Vector3 center = bounds.center;
+        Destroy(temp);
+        return center;
     }
 
     private IEnumerator LandingSequence()
