@@ -34,14 +34,24 @@ public class LevelIntro : MonoBehaviour
     [SerializeField] private GameObject chutePrefab;
     [SerializeField] private Vector3 chuteOffset = Vector3.zero;
 
-    [Header("Visual")]
-    [SerializeField] private float fadeFromBlackDuration = 0.5f;
+    [Header("Hole Seal")]
+    [Tooltip("Optional prefab to spawn over the hole after landing (e.g. a ceiling slab matching the room).")]
+    [SerializeField] private GameObject ceilingCapPrefab;
+    [Tooltip("Where to spawn the ceiling cap. If unset, uses this transform's position.")]
+    [SerializeField] private Vector3 ceilingCapOffset = Vector3.zero;
+
+    [Header("Void Cap")]
+    [Tooltip("Size of the auto-generated black cap at the top of the chute (X=width, Y=depth). Set to 0 to disable.")]
+    [SerializeField] private Vector2 voidCapSize = new Vector2(6f, 6f);
+    [Tooltip("How far above the chute center to place the void cap")]
+    [SerializeField] private float voidCapHeight = 15f;
 
     private DoomMovement playerMove;
     private MouseLook playerLook;
     private CharacterController controller;
     private AudioSource audioSource;
     private GameObject chuteInstance;
+    private GameObject voidCap;
     private float fallSpeed = 0f;
     private bool falling = true;
     private bool landed = false;
@@ -80,6 +90,22 @@ public class LevelIntro : MonoBehaviour
             chuteInstance = Instantiate(chutePrefab, playerMove.transform.position + chuteOffset, Quaternion.identity);
         }
 
+        // Create a black cap above the chute so looking up shows infinite darkness
+        if (voidCapSize.x > 0 && voidCapSize.y > 0)
+        {
+            voidCap = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            voidCap.name = "VoidCap";
+            Destroy(voidCap.GetComponent<Collider>());
+            voidCap.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // face downward
+            voidCap.transform.localScale = new Vector3(voidCapSize.x, voidCapSize.y, 1f);
+            // Unlit black material
+            var renderer = voidCap.GetComponent<Renderer>();
+            renderer.material = new Material(Shader.Find("Unlit/Color"));
+            renderer.material.color = Color.black;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
         // Wind audio
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
@@ -106,6 +132,10 @@ public class LevelIntro : MonoBehaviour
         // Keep chute centered on player
         if (chuteInstance != null)
             chuteInstance.transform.position = playerMove.transform.position + chuteOffset;
+
+        // Keep void cap above player
+        if (voidCap != null)
+            voidCap.transform.position = playerMove.transform.position + Vector3.up * voidCapHeight;
 
         // Wind volume increases with speed
         if (audioSource != null && windLoop != null)
@@ -141,9 +171,18 @@ public class LevelIntro : MonoBehaviour
         if (shake != null)
             shake.Shake(landingShakeDuration, landingShakeMagnitude);
 
-        // Destroy chute
+        // Destroy chute and void cap
         if (chuteInstance != null)
             Destroy(chuteInstance);
+        if (voidCap != null)
+            Destroy(voidCap);
+
+        // Seal the hole with a ceiling cap
+        if (ceilingCapPrefab != null)
+        {
+            Vector3 capPos = transform.position + ceilingCapOffset;
+            Instantiate(ceilingCapPrefab, capPos, Quaternion.identity);
+        }
 
         // Brief freeze frame on impact
         if (landingFreezeDuration > 0f)
