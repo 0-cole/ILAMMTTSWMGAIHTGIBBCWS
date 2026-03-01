@@ -132,43 +132,33 @@ public class IntroSplash : MonoBehaviour
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(true);
 
-        // White flash on reveal
-        yield return StartCoroutine(FlashScreen());
-
-        Destroy(gameObject);
-    }
-
-    private IEnumerator FlashScreen()
-    {
-        // Create a fullscreen white overlay on the main menu's canvas
-        Canvas targetCanvas = mainMenuPanel != null ? mainMenuPanel.GetComponentInParent<Canvas>() : null;
-        if (targetCanvas == null) yield break;
-
-        GameObject flashObj = new GameObject("IntroFlash");
-        flashObj.transform.SetParent(targetCanvas.transform, false);
-        flashObj.transform.SetAsLastSibling();
-
-        RectTransform flashRT = flashObj.AddComponent<RectTransform>();
-        flashRT.anchorMin = Vector2.zero;
-        flashRT.anchorMax = Vector2.one;
-        flashRT.offsetMin = Vector2.zero;
-        flashRT.offsetMax = Vector2.zero;
-
-        Image flashImg = flashObj.AddComponent<Image>();
-        flashImg.color = flashColor;
-        flashImg.raycastTarget = false;
-
-        // Fade out
-        float t = 0f;
-        while (t < flashDuration)
+        // White flash on reveal — spawn it on the target canvas so it survives this object's destruction
+        if (mainMenuPanel != null)
         {
-            t += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, t / flashDuration);
-            flashImg.color = new Color(flashColor.r, flashColor.g, flashColor.b, alpha);
-            yield return null;
+            Canvas targetCanvas = mainMenuPanel.GetComponentInParent<Canvas>();
+            if (targetCanvas != null)
+            {
+                GameObject flashObj = new GameObject("IntroFlash");
+                flashObj.transform.SetParent(targetCanvas.transform, false);
+                flashObj.transform.SetAsLastSibling();
+
+                RectTransform flashRT = flashObj.AddComponent<RectTransform>();
+                flashRT.anchorMin = Vector2.zero;
+                flashRT.anchorMax = Vector2.one;
+                flashRT.offsetMin = Vector2.zero;
+                flashRT.offsetMax = Vector2.zero;
+
+                Image flashImg = flashObj.AddComponent<Image>();
+                flashImg.color = flashColor;
+                flashImg.raycastTarget = false;
+
+                // Use a self-destroying fader component
+                IntroFlashFader fader = flashObj.AddComponent<IntroFlashFader>();
+                fader.Init(flashColor, flashDuration);
+            }
         }
 
-        Destroy(flashObj);
+        Destroy(gameObject);
     }
 
     private IEnumerator Fade(CanvasGroup group, float from, float to, float duration)
