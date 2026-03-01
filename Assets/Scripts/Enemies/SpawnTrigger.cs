@@ -110,6 +110,10 @@ public class SpawnTrigger : MonoBehaviour
 
         Debug.Log($"[SpawnTrigger] Group {spawnGroupId}: All waves complete!");
 
+        // Fade combat music out and bring ambience back
+        if (LevelMusicManager.Instance != null)
+            LevelMusicManager.Instance.EndCombat();
+
         yield return new WaitForSeconds(selfDestroyDelay);
         Destroy(gameObject);
     }
