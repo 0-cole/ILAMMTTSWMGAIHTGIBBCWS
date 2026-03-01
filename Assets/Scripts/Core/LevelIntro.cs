@@ -37,8 +37,8 @@ public class LevelIntro : MonoBehaviour
     [Header("Hole Seal")]
     [Tooltip("Optional prefab to spawn over the hole after landing (e.g. a ceiling slab matching the room).")]
     [SerializeField] private GameObject ceilingCapPrefab;
-    [Tooltip("Where to spawn the ceiling cap. If unset, uses this transform's position.")]
-    [SerializeField] private Vector3 ceilingCapOffset = Vector3.zero;
+    [Tooltip("Drag a Transform here to mark where the ceiling cap spawns. If empty, spawns at this object's position.")]
+    [SerializeField] private Transform ceilingCapSpawnPoint;
 
     [Header("Void Cap")]
     [Tooltip("Size of the auto-generated black cap at the top of the chute (X=width, Y=depth). Set to 0 to disable.")]
@@ -180,8 +180,9 @@ public class LevelIntro : MonoBehaviour
         // Seal the hole with a ceiling cap
         if (ceilingCapPrefab != null)
         {
-            Vector3 capPos = transform.position + ceilingCapOffset;
-            Instantiate(ceilingCapPrefab, capPos, Quaternion.identity);
+            Vector3 capPos = ceilingCapSpawnPoint != null ? ceilingCapSpawnPoint.position : transform.position;
+            Quaternion capRot = ceilingCapSpawnPoint != null ? ceilingCapSpawnPoint.rotation : Quaternion.identity;
+            Instantiate(ceilingCapPrefab, capPos, capRot);
         }
 
         // Brief freeze frame on impact
