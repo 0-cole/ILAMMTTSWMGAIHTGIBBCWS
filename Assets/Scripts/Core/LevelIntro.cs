@@ -3,8 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
-/// ULTRAKILL-style level intro: player drops from above through a continuously-spawning
-/// chute with wind SFX, lands with a crash + camera shake + freeze frame, then gameplay begins.
+/// ULTRAKILL-style level intro: player drops from above through a chute
+/// with wind SFX, lands with crash + camera shake + freeze frame.
+/// 
+/// Chute segments spawn centered on the player using child transform
+/// averaging (no renderer bounds needed). New segments spawn as the
+/// player falls past half the segment height.
 /// </summary>
 public class LevelIntro : MonoBehaviour
 {
@@ -25,8 +29,10 @@ public class LevelIntro : MonoBehaviour
     [SerializeField] private float crashVolume = 0.9f;
 
     [Header("Chute (Optional)")]
-    [Tooltip("A tube segment prefab (4 walls). Clones spawn continuously as the player falls.")]
+    [Tooltip("A tube segment prefab (4 walls). Spawns centered on the player as they fall.")]
     [SerializeField] private GameObject chutePrefab;
+    [Tooltip("Height of the walls in the chute prefab (check ProBuilder Object Size Y).")]
+    [SerializeField] private float wallHeight = 4.17f;
     [Tooltip("Stop spawning segments this many meters above the landing point.")]
     [SerializeField] private float stopSpawningAboveLanding = 10f;
 
@@ -48,8 +54,7 @@ public class LevelIntro : MonoBehaviour
     private bool falling = true;
     private bool landed = false;
     private float landingY;
-    private float lowestSegmentBottomY = float.MaxValue;
-    private float segmentHeight = 0f;
+    private float lastSpawnY;
     private bool doneSpawning = false;
 
     void Start()
@@ -79,9 +84,12 @@ public class LevelIntro : MonoBehaviour
         playerMove.transform.position += Vector3.up * spawnHeight;
         controller.enabled = true;
 
-        // Spawn first chute segment centered on the player
+        // Spawn first chute centered on player
         if (chutePrefab != null)
-            SpawnSegmentCenteredAt(playerMove.transform.position);
+        {
+            SpawnChuteCentered();
+            lastSpawnY = playerMove.transform.position.y;
+        }
 
         // Void cap
         if (voidCapSize.x > 0 && voidCapSize.y > 0)
@@ -98,7 +106,6 @@ public class LevelIntro : MonoBehaviour
             rend.receiveShadows = false;
         }
 
-        // Wind audio
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
         if (windLoop != null)
@@ -118,21 +125,22 @@ public class LevelIntro : MonoBehaviour
         fallSpeed = Mathf.Min(fallSpeed, maxFallSpeed);
         controller.Move(Vector3.down * fallSpeed * Time.deltaTime);
 
-        // Spawn new segments when the player is getting close to the bottom of existing ones
+        float playerY = playerMove.transform.position.y;
+
+        // Spawn new segment when player has fallen half the wall height past last spawn
         if (chutePrefab != null && !doneSpawning)
         {
-            float playerY = playerMove.transform.position.y;
-            // When within one segment height of the bottom, spawn a new one below
-            while (playerY < lowestSegmentBottomY + segmentHeight)
+            if (playerY < lastSpawnY - wallHeight * 0.5f)
             {
-                float nextCenterY = lowestSegmentBottomY - segmentHeight * 0.5f;
-                if (nextCenterY < landingY + stopSpawningAboveLanding)
+                if (playerY < landingY + stopSpawningAboveLanding)
                 {
                     doneSpawning = true;
-                    break;
                 }
-                Vector3 target = new Vector3(playerMove.transform.position.x, nextCenterY, playerMove.transform.position.z);
-                SpawnSegmentCenteredAt(target);
+                else
+                {
+                    SpawnChuteCentered();
+                    lastSpawnY = playerY;
+                }
             }
         }
 
@@ -142,47 +150,49 @@ public class LevelIntro : MonoBehaviour
         if (audioSource != null && windLoop != null)
             audioSource.volume = Mathf.Lerp(windVolume * 0.3f, windVolume, fallSpeed / maxFallSpeed);
 
-        if (controller.isGrounded || playerMove.transform.position.y <= landingY)
+        if (controller.isGrounded || playerY <= landingY)
             StartCoroutine(LandingSequence());
     }
 
     /// <summary>
-    /// Spawns a chute segment, then measures its actual renderer bounds and
-    /// shifts it so the visual center ends up at the target position.
-    /// No manual offset or bounds pre-calculation needed.
+    /// Spawns the chute prefab, then shifts it so the average position of
+    /// its direct children (the walls) is centered on the player.
+    /// No renderer bounds needed -- just pure transform math.
     /// </summary>
-    private void SpawnSegmentCenteredAt(Vector3 target)
+    private void SpawnChuteCentered()
     {
-        GameObject seg = Instantiate(chutePrefab, target, Quaternion.identity);
+        Vector3 playerPos = playerMove.transform.position;
 
-        // Measure where the visual center actually ended up
-        var renderers = seg.GetComponentsInChildren<Renderer>();
-        if (renderers.Length > 0)
+        // Instantiate at origin first
+        GameObject seg = Instantiate(chutePrefab, Vector3.zero, Quaternion.identity);
+
+        // Find average world position of all direct children (the 4 walls)
+        Vector3 sum = Vector3.zero;
+        int count = 0;
+        foreach (Transform child in seg.transform)
         {
-            Bounds bounds = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++)
-                bounds.Encapsulate(renderers[i].bounds);
+            sum += child.position;
+            count++;
+        }
 
-            // Shift so visual center matches target
-            Vector3 shift = target - bounds.center;
-            seg.transform.position += shift;
-
-            // Track segment height from first segment
-            if (segmentHeight < 0.1f)
-            {
-                segmentHeight = bounds.size.y;
-                Debug.Log("[LevelIntro] Measured segment height: " + segmentHeight);
-            }
-
-            // Track the bottom edge of the lowest segment
-            float thisBottom = target.y - segmentHeight * 0.5f;
-            if (thisBottom < lowestSegmentBottomY)
-                lowestSegmentBottomY = thisBottom;
+        if (count > 0)
+        {
+            Vector3 childCenter = sum / count;
+            // Shift the root so the child center lands on the player
+            seg.transform.position = playerPos - childCenter;
+        }
+        else
+        {
+            // Fallback: no children, just put it at player pos
+            seg.transform.position = playerPos;
         }
 
         seg.name = "ChuteSegment_" + chuteSegments.Count;
+
+        // Disable all colliders so player falls through
         foreach (var col in seg.GetComponentsInChildren<Collider>())
             col.enabled = false;
+
         chuteSegments.Add(seg);
     }
 

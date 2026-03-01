@@ -142,14 +142,9 @@ public class EncounterIntro : MonoBehaviour
         if (textDisplay != null)
             textDisplay.gameObject.SetActive(false);
 
-        // Start combat music via LevelMusicManager crossfade
-        if (LevelMusicManager.Instance != null && combatMusic != null)
+        // Start combat music directly
+        if (musicSource != null && combatMusic != null)
         {
-            LevelMusicManager.Instance.StartCombat(combatMusic, combatMusicVolume);
-        }
-        else if (musicSource != null && combatMusic != null)
-        {
-            // Fallback: direct play if no LevelMusicManager
             musicSource.clip = combatMusic;
             musicSource.volume = combatMusicVolume;
             musicSource.loop = true;
