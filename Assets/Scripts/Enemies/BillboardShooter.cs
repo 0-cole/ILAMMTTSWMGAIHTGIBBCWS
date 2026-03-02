@@ -85,6 +85,14 @@ public class BillboardShooter : MonoBehaviour, IDamageable
 
         if (distanceToPlayer <= detectionRange && Time.time >= nextFireTime)
         {
+            // Line of sight check — don't shoot through walls
+            Vector3 dirToPlayer = (playerTransform.position + Vector3.up * 0.5f) - transform.position;
+            if (Physics.Raycast(transform.position, dirToPlayer.normalized, out RaycastHit losHit, detectionRange))
+            {
+                if (losHit.transform.root != playerTransform.root)
+                    return; // Wall or obstacle blocking view
+            }
+
             ShootAtPlayer();
             nextFireTime = Time.time + fireRate;
         }
