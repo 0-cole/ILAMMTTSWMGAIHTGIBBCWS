@@ -45138,7 +45138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb83106c677ad5f47afbe476d5f59833, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnHeight: 50
+  spawnHeight: 200
   fallGravity: 35
   maxFallSpeed: 50
   landingShakeDuration: 0.35
@@ -45149,7 +45149,7 @@ MonoBehaviour:
   crashSound: {fileID: 8300000, guid: ac9bd57aaf8a4f64ebc0b3dc3648d198, type: 3}
   crashVolume: 0.9
   chutePrefab: {fileID: 4566248679570728423, guid: c932b79b5964fbb48bc8a00825c5ae87, type: 3}
-  chuteSegmentHeight: 10
+  wallHeight: 4.17
   stopSpawningAboveLanding: 10
   ceilingCapPrefab: {fileID: 795818733918438622, guid: c2710c41291cc5845aa620ce017624b4, type: 3}
   ceilingCapSpawnPoint: {fileID: 1684971452}
@@ -59007,9 +59007,6 @@ MonoBehaviour:
   combatSource: {fileID: 1194841464}
   ambienceClip: {fileID: 8300000, guid: fe6d357630ab6d948af41767429b1813, type: 3}
   ambienceVolume: 0.5
-  combatFadeInDuration: 0.5
-  combatFadeOutDuration: 1.5
-  ambienceFadeDuration: 1.5
 --- !u!1001 &1196297479
 PrefabInstance:
   m_ObjectHideFlags: 0
