@@ -237,6 +237,9 @@ public class WickedFireball : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        // Skip other trigger colliders (e.g. SpawnTriggers, pickup zones)
+        if (other.isTrigger) return;
+
         // Only skip Player collision if this is a player-owned fireball (prevent self-damage)
         // Enemy fireballs must proceed to HandleImpact to damage the player
         if (isPlayerOwned)

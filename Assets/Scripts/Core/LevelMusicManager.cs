@@ -52,10 +52,11 @@ public class LevelMusicManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Play combat music directly on the combat source.
+    /// Play combat music directly on the combat source. Stops ambience.
     /// </summary>
     public void PlayCombatMusic(AudioClip clip, float volume = 0.7f)
     {
+        StopAmbience();
         if (combatSource != null && clip != null)
         {
             combatSource.clip = clip;

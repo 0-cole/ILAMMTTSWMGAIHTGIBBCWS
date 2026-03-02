@@ -33,8 +33,7 @@ public class SpawnTrigger : MonoBehaviour
 
     void Start()
     {
-        Collider col = GetComponent<Collider>();
-        col.isTrigger = true;
+        // isTrigger should be set in the Inspector — don't force it here
     }
 
     void OnTriggerEnter(Collider other)

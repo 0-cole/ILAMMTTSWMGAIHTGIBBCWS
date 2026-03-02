@@ -115,6 +115,10 @@ public class LevelIntro : MonoBehaviour
             rend.receiveShadows = false;
         }
 
+        // Stop ambience during the chute fall
+        if (LevelMusicManager.Instance != null)
+            LevelMusicManager.Instance.StopAmbience();
+
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.spatialBlend = 0f;
         if (windLoop != null)
