@@ -42,9 +42,9 @@ public class EnemySpawnPoint : MonoBehaviour
     /// <summary>
     /// Called by SpawnTrigger to spawn the enemy at this point.
     /// </summary>
-    public void SpawnEnemy()
+    public GameObject SpawnEnemy()
     {
-        if (hasSpawned) return;
+        if (hasSpawned) return null;
         hasSpawned = true;
 
         // Smoke plume
@@ -56,27 +56,29 @@ public class EnemySpawnPoint : MonoBehaviour
 
         if (enemyType == EnemyType.Glonk)
         {
-            SpawnGlonk();
+            return SpawnGlonk();
         }
         else if (enemyType == EnemyType.Billboard)
         {
-            SpawnBillboard();
+            return SpawnBillboard();
         }
+        return null;
     }
 
-    private void SpawnGlonk()
+    private GameObject SpawnGlonk()
     {
         if (glonkPrefab == null)
         {
             Debug.LogError($"[EnemySpawnPoint] No Glonk prefab on {gameObject.name}!");
-            return;
+            return null;
         }
 
         GameObject enemy = Instantiate(glonkPrefab, transform.position, transform.rotation);
         ConfigureDrops(enemy);
+        return enemy;
     }
 
-    private void SpawnBillboard()
+    private GameObject SpawnBillboard()
     {
         // Reuse BillboardSpawner's approach but one-shot
         GameObject enemy = new GameObject("Billboard Enemy");
@@ -130,6 +132,7 @@ public class EnemySpawnPoint : MonoBehaviour
                 canvasCopy.transform.localRotation = Quaternion.identity;
             }
         }
+        return enemy;
     }
 
     private void ConfigureDrops(GameObject enemy)
