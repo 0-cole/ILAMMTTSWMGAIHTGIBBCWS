@@ -86,11 +86,18 @@ public class LevelIntro : MonoBehaviour
         playerMove.transform.position += Vector3.up * spawnHeight;
         controller.enabled = true;
 
-        // Spawn first chute centered on player
+        // Pre-spawn chutes at and below the player so there's no void visible
         if (chutePrefab != null)
         {
-            SpawnChuteCentered();
-            lastSpawnY = playerMove.transform.position.y;
+            float y = playerMove.transform.position.y;
+            int preSpawnCount = Mathf.CeilToInt(maxFallSpeed / wallHeight) + 2;
+            for (int i = 0; i < preSpawnCount; i++)
+            {
+                float spawnY = y - i * wallHeight;
+                if (spawnY < landingY + stopSpawningAboveLanding) break;
+                SpawnChuteAtY(spawnY);
+            }
+            lastSpawnY = y - (preSpawnCount - 1) * wallHeight;
         }
 
         // Void cap
@@ -129,20 +136,20 @@ public class LevelIntro : MonoBehaviour
 
         float playerY = playerMove.transform.position.y;
 
-        // Spawn new segment when player has fallen half the wall height past last spawn
+        // Spawn new segments to stay ahead of the player
         if (chutePrefab != null && !doneSpawning)
         {
-            if (playerY < lastSpawnY - wallHeight * 0.5f)
+            float bufferY = playerY - wallHeight * 3f;
+            while (lastSpawnY > bufferY)
             {
-                if (playerY < landingY + stopSpawningAboveLanding)
+                float nextY = lastSpawnY - wallHeight;
+                if (nextY < landingY + stopSpawningAboveLanding)
                 {
                     doneSpawning = true;
+                    break;
                 }
-                else
-                {
-                    SpawnChuteCentered();
-                    lastSpawnY = playerY;
-                }
+                SpawnChuteAtY(nextY);
+                lastSpawnY = nextY;
             }
         }
 
@@ -157,17 +164,16 @@ public class LevelIntro : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns the chute prefab centered on the player by averaging
-    /// direct children positions, then applies the manual chuteOffset tweak.
+    /// Spawns the chute prefab so its visual center is at the player's XZ
+    /// but at the specified Y height.
     /// </summary>
-    private void SpawnChuteCentered()
+    private void SpawnChuteAtY(float targetY)
     {
         Vector3 playerPos = playerMove.transform.position;
+        Vector3 targetPos = new Vector3(playerPos.x, targetY, playerPos.z);
 
-        // Instantiate at origin first
         GameObject seg = Instantiate(chutePrefab, Vector3.zero, Quaternion.identity);
 
-        // Average direct children positions to find the visual center
         Vector3 sum = Vector3.zero;
         int count = 0;
         foreach (Transform child in seg.transform)
@@ -177,16 +183,10 @@ public class LevelIntro : MonoBehaviour
         }
 
         Vector3 childCenter = count > 0 ? sum / count : Vector3.zero;
-        // Shift so child center aligns with player, then apply manual offset
-        seg.transform.position = playerPos - childCenter + chuteOffset;
-
-        // DEBUG: log where things ended up so we can calculate the correct offset
-        Vector3 actualCenter = seg.transform.position + childCenter;
-        Debug.Log($"[LevelIntro] Player={playerPos} ChildCenter={childCenter} ChuteRoot={seg.transform.position} ActualCenter={actualCenter} Diff={playerPos - actualCenter}");
+        seg.transform.position = targetPos - childCenter + chuteOffset;
 
         seg.name = "ChuteSegment_" + chuteSegments.Count;
 
-        // Disable all colliders so player falls through
         foreach (var col in seg.GetComponentsInChildren<Collider>())
             col.enabled = false;
 
