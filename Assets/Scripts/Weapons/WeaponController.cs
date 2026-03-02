@@ -49,6 +49,7 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private float punchSoundVolume = 0.6f;
     [SerializeField] private float parrySoundVolume = 0.8f;
     private AudioSource audioSource;
+    private AudioSource parryAudioSource;
 
     [Header("Weapon System")]
     public float spawnOffset = 1.0f;
@@ -276,13 +277,19 @@ public class WeaponController : MonoBehaviour
 
     void ShootPunch()
     {
-        // Audio
-        if (punchSound != null)
+        // Ensure audio sources exist
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        if (parryAudioSource == null)
         {
-            if (audioSource == null) audioSource = GetComponent<AudioSource>();
-            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.PlayOneShot(punchSound, punchSoundVolume);
+            parryAudioSource = gameObject.AddComponent<AudioSource>();
+            parryAudioSource.playOnAwake = false;
+            parryAudioSource.spatialBlend = 0f;
         }
+
+        // Play punch sound initially
+        if (punchSound != null)
+            audioSource.PlayOneShot(punchSound, punchSoundVolume);
 
         // 1. Visuals
         if (punchOverlay != null)
@@ -309,13 +316,10 @@ public class WeaponController : MonoBehaviour
 
         if (hitProjectile) 
         {
-            // Parry sound
+            // Fade out punch sound, play parry on separate source
+            StartCoroutine(FadeOutSource(audioSource, 0.05f));
             if (parrySound != null)
-            {
-                if (audioSource == null) audioSource = GetComponent<AudioSource>();
-                if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.PlayOneShot(parrySound, parrySoundVolume);
-            }
+                parryAudioSource.PlayOneShot(parrySound, parrySoundVolume);
             return;
         }
 
@@ -471,5 +475,19 @@ public class WeaponController : MonoBehaviour
     {
         currentMana += amount;
         currentMana = Mathf.Min(currentMana, maxMana);
+    }
+
+    private System.Collections.IEnumerator FadeOutSource(AudioSource source, float duration)
+    {
+        float startVol = source.volume;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            source.volume = Mathf.Lerp(startVol, 0f, t / duration);
+            yield return null;
+        }
+        source.Stop();
+        source.volume = startVol;
     }
 }

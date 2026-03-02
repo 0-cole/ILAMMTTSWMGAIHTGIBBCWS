@@ -24,8 +24,12 @@ public class DoomMovement : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] private AudioClip footstepLoop;
-    [SerializeField] private float footstepVolume = 0.4f;
+    [SerializeField] private float footstepVolume = 0.15f;
+    [SerializeField] private float footstepSpeedThreshold = 3f;
+    [SerializeField] private AudioClip wallSlideSound;
+    [SerializeField] private float wallSlideVolume = 0.5f;
     private AudioSource footstepSource;
+    private AudioSource wallSlideSource;
 
     [Header("Wall Jump")]
     [SerializeField] private float wallSlideDuration = 3f;
@@ -55,6 +59,16 @@ public class DoomMovement : MonoBehaviour
             footstepSource.volume = footstepVolume;
             footstepSource.playOnAwake = false;
             footstepSource.spatialBlend = 0f;
+        }
+
+        if (wallSlideSound != null)
+        {
+            wallSlideSource = gameObject.AddComponent<AudioSource>();
+            wallSlideSource.clip = wallSlideSound;
+            wallSlideSource.loop = true;
+            wallSlideSource.volume = wallSlideVolume;
+            wallSlideSource.playOnAwake = false;
+            wallSlideSource.spatialBlend = 0f;
         }
     }
     
@@ -147,15 +161,25 @@ public class DoomMovement : MonoBehaviour
             jumpCount = 0; // Reset double jump
         }
 
-        // Footstep audio
+        // Footstep audio — only when actively pressing movement keys while grounded
         if (footstepSource != null)
         {
+            bool hasInput = Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.1f || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0.1f;
             float hSpeed = new Vector3(velocity.x, 0, velocity.z).magnitude;
-            bool shouldPlay = isGrounded && hSpeed > 1f;
+            bool shouldPlay = isGrounded && hasInput && hSpeed > footstepSpeedThreshold && !isWallSliding;
             if (shouldPlay && !footstepSource.isPlaying)
                 footstepSource.Play();
             else if (!shouldPlay && footstepSource.isPlaying)
                 footstepSource.Stop();
+        }
+
+        // Wall slide audio
+        if (wallSlideSource != null)
+        {
+            if (isWallSliding && !wallSlideSource.isPlaying)
+                wallSlideSource.Play();
+            else if (!isWallSliding && wallSlideSource.isPlaying)
+                wallSlideSource.Stop();
         }
     }
     
