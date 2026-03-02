@@ -180,6 +180,10 @@ public class LevelIntro : MonoBehaviour
         // Shift so child center aligns with player, then apply manual offset
         seg.transform.position = playerPos - childCenter + chuteOffset;
 
+        // DEBUG: log where things ended up so we can calculate the correct offset
+        Vector3 actualCenter = seg.transform.position + childCenter;
+        Debug.Log($"[LevelIntro] Player={playerPos} ChildCenter={childCenter} ChuteRoot={seg.transform.position} ActualCenter={actualCenter} Diff={playerPos - actualCenter}");
+
         seg.name = "ChuteSegment_" + chuteSegments.Count;
 
         // Disable all colliders so player falls through
