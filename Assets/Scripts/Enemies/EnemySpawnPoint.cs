@@ -31,7 +31,8 @@ public class EnemySpawnPoint : MonoBehaviour
 
     [Header("Effects")]
     public GameObject smokeEffectPrefab;
-    public AudioClip spawnSound;
+    public AudioClip glonkSpawnSound;
+    public AudioClip billboardSpawnSound;
 
     [Header("Billboard Settings")]
     public Sprite[] billboardSprites;
@@ -79,16 +80,16 @@ public class EnemySpawnPoint : MonoBehaviour
             }
         }
 
-        // Spawn sound
-        if (spawnSound != null)
-            AudioSource.PlayClipAtPoint(spawnSound, transform.position, 1f);
-
         if (enemyType == EnemyType.Glonk)
         {
+            if (glonkSpawnSound != null)
+                AudioSource.PlayClipAtPoint(glonkSpawnSound, transform.position, 1f);
             return SpawnGlonk();
         }
         else if (enemyType == EnemyType.Billboard)
         {
+            if (billboardSpawnSound != null)
+                AudioSource.PlayClipAtPoint(billboardSpawnSound, transform.position, 1f);
             return SpawnBillboard();
         }
         return null;
