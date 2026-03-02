@@ -7,21 +7,19 @@ data class ShadowWizard(
 
 fun main() {
     val moneyGang = listOf(
-        ShadowWizard("Glonk", 10, "your money? OUR money."),
-        ShadowWizard("Billboard Bob", 8, "I didn't even take your money dude"),
-        ShadowWizard("Red Wizard Rick", 7, "IT WAS $30 WHY ARE YOU DOING THIS"),
-        ShadowWizard("The King", 5, "YOU KILLED MY FAMILY! I WONT LET YOU LEAVE HERE ALIVE!"),
+        ShadowWizard("Glonk", 420, "your money? OUR money."),
+        ShadowWizard("Billboard Bob", 1337, "you can't hit what you can't reach"),
+        ShadowWizard("Red Wizard Rick", 69, "I'm literally on fire"),
+        ShadowWizard("The Gold One", 9001, "its over 9000"),
     )
 
     println("THE SHADOW WIZARD MONEY GANG INTRODUCES THEMSELVES:")
     moneyGang.forEach { wizard ->
         println("  ${wizard.name}: \"${wizard.catchphrase}\"")
-        println("  (holding $${wizard.stolenMoney} of YOUR $30)")
+        println("  (holding $${wizard.stolenMoney} of YOUR money)")
     }
     
     val totalStolen = moneyGang.sumOf { it.stolenMoney }
     println("\nTotal debt: $$totalStolen")
-    println("Bodies so far: countless")
-    println("Was it worth it: absolutely not")
-    println("Will we stop: absolutely not")
+    println("Payment method: WICKED SPELLS")
 }

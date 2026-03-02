@@ -1,50 +1,13 @@
-# ILAMMTTSWMGAIHTGIBBCWS
+ILAMMTTSWMGAIHTGIBBCWS  -- I Lost All My Money To The Shadow Wizard Money Gang And I Have To Get It Back By Casting Wicked Spells
 
-> *I Lost All My Money To The Shadow Wizard Money Gang And I Have To Get It Back By Casting Wicked Spells*
+A fast-paced DOOM-style first-person shooter built in Unity where you fight through hordes of shadow wizard enemies using magical spells to reclaim your stolen fortune.
 
----
+Gameplay — DOOM-style movement (wall sliding, bunny hopping), spell-based combat (Fireball, Chain Lightning, Punch with projectile boosting), wave-based encounters with ULTRAKILL-style intros, Glonk melee + Billboard ranged enemies, breakcore soundtrack
 
-Someone took $30 from you. A low-ranking thug. Barely worth remembering.
+Controls — WASD move, Mouse look, Space jump, Shift sprint, LMB fireball, RMB lightning, E punch, Esc pause, F punch, Q swap spell
 
-You remembered.
+Built With — Unity 6 (URP), C#, TextMesh Pro, NavMesh AI
 
-You carved a path through every hall they called home. Every wizard who raised a hand fell. The ones who ran fell too. You didn't stop when the money was paid back. You didn't stop when they begged. By the time you reached the throne room, there was no one left to beg.
+Project Structure — organized folders for Audio (Music/SFX), Fonts, Prefabs, Scripts (Core/Enemies/Player/UI/Weapons), Shaders, Sprites, Video
 
-Their king stands alone now. Not because he's powerful — because everyone else is dead. His family. His people. All of it. Gone. Over $30 he never even took.
-
-He's not fighting for money. He's fighting because you left him nothing else.
-
----
-
-## 🎮 Gameplay
-
-- **DOOM-style movement** — fast strafing, wall sliding, bunny hopping
-- **Spell-based combat** — Fireball, Chain Lightning, and Punch (with projectile boosting)
-- **Wave-based encounters** — ULTRAKILL-inspired encounter intros with typewriter text and music drops
-- **Enemy types** — Glonk melee rushers and Billboard ranged casters
-- **Breakcore soundtrack** — featuring remixes of Crabulon, Guardian, Black Knife, and The World Revolving
-
-## 🕹️ Controls
-
-| Action | Key |
-|--------|-----|
-| Move | WASD |
-| Look | Mouse |
-| Jump | Space |
-| Sprint | Left Shift |
-| Fireball | Left Click |
-| Lightning | Right Click |
-| Punch | E |
-| Pause | Escape |
-
-## 🛠️ Built With
-
-- **Unity 6** (URP)
-- **C#**
-- **TextMesh Pro**
-- **NavMesh** for enemy AI pathfinding
-
-## 👥 Contributors
-
-- **0-cole** — Game design, level design, art direction
-- **YiSangGlazer** — Development support
+Contributors — 0-cole (game design, level design, art) and YiSangGlazer

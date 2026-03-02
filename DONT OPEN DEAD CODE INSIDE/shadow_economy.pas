@@ -14,8 +14,8 @@ var
 
 begin
   Glonk.Name := 'Glonk the Unforgivable';
-  Glonk.StolenMoney := 30;
+  Glonk.StolenMoney := 999999;
   Glonk.IsWicked := True;
   WriteLn('Shadow Wizard Money Gang stole $', Glonk.StolenMoney);
-  WriteLn('We committed genocide over it. No regrets.');
+  WriteLn('Time to get it back with WICKED SPELLS');
 end.

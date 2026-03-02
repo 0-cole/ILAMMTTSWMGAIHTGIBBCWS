@@ -44,7 +44,6 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private AudioClip fireballSound;
     [SerializeField] private AudioClip[] lightningCastSounds;
     [SerializeField] private AudioClip lightningStrikeSound;
-    [SerializeField] private AudioClip punchExplosionSound;
     private AudioSource audioSource;
 
     [Header("Weapon System")]
@@ -58,8 +57,6 @@ public class WeaponController : MonoBehaviour
     void Start()
     {
         currentMana = maxMana;
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         InitializeWeapons();
         LoadWeapons();
         
@@ -300,8 +297,8 @@ public class WeaponController : MonoBehaviour
 
         if (hitProjectile) 
         {
-            if (punchExplosionSound != null) audioSource.PlayOneShot(punchExplosionSound);
-            return;
+            // Optional: Add specific "Parry" sound or feedback here
+            return; // If we punched a projectile, maybe we don't punch the enemy too? Or maybe we DO? Let's return for now to emphasize the parry.
         }
 
         // 3. Hitscan Attack (Only if no projectile was boosted)
@@ -340,8 +337,6 @@ public class WeaponController : MonoBehaviour
 
     void ShootFireball()
     {
-        if (fireballSound != null) audioSource.PlayOneShot(fireballSound);
-
         // Determine target point
         RaycastHit hit;
         Vector3 targetPoint;
@@ -380,12 +375,6 @@ public class WeaponController : MonoBehaviour
 
     void ShootLightning()
     {
-        // Play random cast sound variation
-        if (lightningCastSounds != null && lightningCastSounds.Length > 0)
-        {
-            audioSource.PlayOneShot(lightningCastSounds[Random.Range(0, lightningCastSounds.Length)]);
-        }
-
         // Settings
         int maxBounces = 50; 
         float currentDamage = lightningDamage; 
@@ -433,7 +422,7 @@ public class WeaponController : MonoBehaviour
             // Create the Runner to handle the Chain
             GameObject runnerObj = new GameObject("ChainLightningRunner_" + Time.time);
             ChainLightningRunner runner = runnerObj.AddComponent<ChainLightningRunner>();
-            runner.Initialize(currentPosition, currentTarget, currentDamage, maxBounces, bounceRange, bounceDelay, lightningEffectPrefab, lightningStrikeSound);
+            runner.Initialize(currentPosition, currentTarget, currentDamage, maxBounces, bounceRange, bounceDelay, lightningEffectPrefab);
         }
         else
         {

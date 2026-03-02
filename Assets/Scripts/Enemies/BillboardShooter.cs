@@ -3,7 +3,7 @@ using UnityEngine;
 public class BillboardShooter : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
-    [SerializeField] private float maxHealth = 200f;
+    [SerializeField] private float maxHealth = 60f;
     [SerializeField] private float currentHealth;
 
     public float CurrentHealth => currentHealth;
@@ -22,7 +22,6 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     [Header("Audio")]
     [SerializeField] private AudioClip deathGrunt;
     [SerializeField] private AudioClip attackGrunt;
-    [SerializeField] private AudioClip spawnSound;
 
     [Header("Pickups")]
     [SerializeField] private GameObject healthPickupPrefab;
@@ -52,8 +51,6 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     {
         currentHealth = maxHealth;
         mainCamera = Camera.main;
-
-        if (spawnSound != null) AudioSource.PlayClipAtPoint(spawnSound, transform.position);
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -92,8 +89,6 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     void ShootAtPlayer()
     {
         if (fireballPrefab == null) return;
-
-        if (attackGrunt != null) AudioSource.PlayClipAtPoint(attackGrunt, transform.position);
 
         // Aim at the player
         Vector3 direction = (playerTransform.position - transform.position).normalized;
@@ -140,8 +135,6 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         isDead = true;
-
-        if (deathGrunt != null) AudioSource.PlayClipAtPoint(deathGrunt, transform.position);
 
         if (deathEffect != null)
         {

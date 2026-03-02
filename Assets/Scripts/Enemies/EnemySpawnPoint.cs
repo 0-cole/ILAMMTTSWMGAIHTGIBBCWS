@@ -19,10 +19,9 @@ public class EnemySpawnPoint : MonoBehaviour
 
     [Header("Spawn Group")]
     [Tooltip("Must match the SpawnTrigger's spawnGroupId")]
-    public float spawnGroupId = 0;
-
-    [Tooltip("Wave number within this group (1 = first wave, 2 = second, etc.)")]
-    public int waveNumber = 1;
+    public int spawnGroupId = 0;
+    [Tooltip("Wave number for sequential spawning (0 = first wave)")]
+    public int waveNumber = 0;
 
     [Header("Prefabs")]
     public GameObject glonkPrefab;
@@ -42,11 +41,10 @@ public class EnemySpawnPoint : MonoBehaviour
 
     /// <summary>
     /// Called by SpawnTrigger to spawn the enemy at this point.
-    /// Returns the spawned GameObject so it can be tracked.
     /// </summary>
-    public GameObject SpawnEnemy()
+    public void SpawnEnemy()
     {
-        if (hasSpawned) return null;
+        if (hasSpawned) return;
         hasSpawned = true;
 
         // Smoke plume
@@ -58,55 +56,32 @@ public class EnemySpawnPoint : MonoBehaviour
 
         if (enemyType == EnemyType.Glonk)
         {
-            return SpawnGlonk();
+            SpawnGlonk();
         }
         else if (enemyType == EnemyType.Billboard)
         {
-            return SpawnBillboard();
+            SpawnBillboard();
         }
-        return null;
     }
 
-    private Vector3 GetSafeSpawnPosition()
-    {
-        Vector3 pos = transform.position;
-
-        // Try NavMesh first — find nearest valid point
-        UnityEngine.AI.NavMeshHit navHit;
-        if (UnityEngine.AI.NavMesh.SamplePosition(pos, out navHit, 5f, UnityEngine.AI.NavMesh.AllAreas))
-        {
-            return navHit.position;
-        }
-
-        // Fallback: raycast down to find floor surface
-        if (Physics.Raycast(pos + Vector3.up * 3f, Vector3.down, out RaycastHit hit, 10f))
-        {
-            return hit.point + Vector3.up * 0.1f;
-        }
-
-        // Last resort: just nudge up a bit
-        return pos + Vector3.up * 1f;
-    }
-
-    private GameObject SpawnGlonk()
+    private void SpawnGlonk()
     {
         if (glonkPrefab == null)
         {
             Debug.LogError($"[EnemySpawnPoint] No Glonk prefab on {gameObject.name}!");
-            return null;
+            return;
         }
 
-        GameObject enemy = Instantiate(glonkPrefab, GetSafeSpawnPosition(), transform.rotation);
+        GameObject enemy = Instantiate(glonkPrefab, transform.position, transform.rotation);
         ConfigureDrops(enemy);
-        return enemy;
     }
 
-    private GameObject SpawnBillboard()
+    private void SpawnBillboard()
     {
-        // Spawn at world root so parent scale doesn't squish the billboard
+        // Reuse BillboardSpawner's approach but one-shot
         GameObject enemy = new GameObject("Billboard Enemy");
-        enemy.transform.position = GetSafeSpawnPosition() + Vector3.up * 1f;
-        enemy.transform.rotation = Quaternion.identity;
+        enemy.transform.position = transform.position + Vector3.up * 1f;
+        enemy.transform.rotation = transform.rotation;
 
         // Quad visual
         GameObject quadObj = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -122,10 +97,6 @@ public class EnemySpawnPoint : MonoBehaviour
         {
             Sprite chosen = billboardSprites[Random.Range(0, billboardSprites.Length)];
             quadRenderer.material = CreateSpriteQuadMaterial(chosen);
-
-            // Adjust quad to match sprite aspect ratio
-            float aspect = (float)chosen.texture.width / chosen.texture.height;
-            quadObj.transform.localScale = new Vector3(quadScale * aspect, quadScale, 1f);
         }
 
         if (billboardSprites != null && billboardSprites.Length > 0)
@@ -134,10 +105,11 @@ public class EnemySpawnPoint : MonoBehaviour
             randomizer.possibleSprites = billboardSprites;
         }
 
-        // Physics — use BoxCollider sized to the quad so it's always hittable
-        BoxCollider col = enemy.AddComponent<BoxCollider>();
+        // Physics
+        CapsuleCollider col = enemy.AddComponent<CapsuleCollider>();
         col.center = Vector3.zero;
-        col.size = new Vector3(quadObj.transform.localScale.x, quadObj.transform.localScale.y, 0.5f);
+        col.radius = 0.5f;
+        col.height = 1f;
         Rigidbody rb = enemy.AddComponent<Rigidbody>();
         rb.isKinematic = true;
 
@@ -158,8 +130,6 @@ public class EnemySpawnPoint : MonoBehaviour
                 canvasCopy.transform.localRotation = Quaternion.identity;
             }
         }
-
-        return enemy;
     }
 
     private void ConfigureDrops(GameObject enemy)
@@ -225,7 +195,7 @@ public class EnemySpawnPoint : MonoBehaviour
 
 #if UNITY_EDITOR
         UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f,
-            $"Group {spawnGroupId} | Wave {waveNumber} | {enemyType}");
+            $"Group {spawnGroupId} | {enemyType}");
 #endif
     }
 }

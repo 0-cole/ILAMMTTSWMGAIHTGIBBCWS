@@ -3,14 +3,15 @@ using UnityEngine.UI;
 using UnityEngine.Video;
 
 /// <summary>
-/// Plays a pre-made visualizer video wrapped into a circle using polar coordinates.
-/// Place as a square RawImage in the top-right corner of your Canvas.
+/// Plays a pre-made visualizer video on a RawImage at the top of the screen.
+/// The video should be a looping visualizer (bars, etc.) rendered upside down
+/// or flipped via RectTransform scale.
 /// 
 /// Setup:
-/// 1. Create a square RawImage (e.g. 250x250) anchored top-right
+/// 1. Create a RawImage in your Canvas, anchored to the top, stretched width
 /// 2. Add this script to it
-/// 3. Assign the VideoClip in Inspector
-/// 4. No need to flip Y — the shader handles the mapping
+/// 3. Assign the VideoClip in Inspector (Assets/Video/TitleVisualizer.mp4)
+/// 4. Flip Y scale to -1 on the RectTransform if your video isn't already upside down
 /// </summary>
 [RequireComponent(typeof(RawImage))]
 public class VideoVisualizer : MonoBehaviour
@@ -19,60 +20,32 @@ public class VideoVisualizer : MonoBehaviour
     [SerializeField] private VideoClip visualizerClip;
 
     [Header("Fade")]
-    [SerializeField] private float fadeDuration = 4.85f;
-
-    [Header("Circle")]
-    [SerializeField] private float innerRadius = 0.15f;
-    [SerializeField] private float outerRadius = 0.48f;
+    [SerializeField] private float fadeDuration = 5f;
 
     private RawImage rawImage;
     private VideoPlayer videoPlayer;
     private RenderTexture renderTexture;
-    private Material circularMat;
     private float fadeTimer;
 
     void Start()
     {
         rawImage = GetComponent<RawImage>();
         rawImage.color = new Color(1f, 1f, 1f, 0f); // Start transparent
-        rawImage.raycastTarget = false;
-
-        // Circular visualizer shader (polar warp + additive blend)
-        var circShader = Shader.Find("UI/CircularVisualizer");
-        if (circShader != null)
-        {
-            circularMat = new Material(circShader);
-            circularMat.SetFloat("_InnerRadius", innerRadius);
-            circularMat.SetFloat("_OuterRadius", outerRadius);
-            rawImage.material = circularMat;
-        }
-
-        // Render above the IntroSplash canvas (sort order 999)
-        var canvasOverride = gameObject.AddComponent<Canvas>();
-        canvasOverride.overrideSorting = true;
-        canvasOverride.sortingOrder = 1000;
 
         // Create render texture
         renderTexture = new RenderTexture(1920, 1080, 0);
         renderTexture.Create();
 
-        // Setup video player — reuse existing or create new
-        videoPlayer = GetComponent<VideoPlayer>();
-        if (videoPlayer == null)
-            videoPlayer = gameObject.AddComponent<VideoPlayer>();
-
+        // Setup video player
+        videoPlayer = gameObject.AddComponent<VideoPlayer>();
         videoPlayer.clip = visualizerClip;
         videoPlayer.renderMode = VideoRenderMode.RenderTexture;
         videoPlayer.targetTexture = renderTexture;
         videoPlayer.isLooping = true;
+        videoPlayer.audioOutputMode = VideoAudioOutputMode.None; // Music handled separately
         videoPlayer.playOnAwake = false;
-
-        // Fully mute video audio — music is handled by TitleScreenMusic
-        videoPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
-        for (ushort i = 0; i < 16; i++)
-            videoPlayer.SetDirectAudioMute(i, true);
-
         videoPlayer.Play();
+
         rawImage.texture = renderTexture;
     }
 
@@ -94,7 +67,5 @@ public class VideoVisualizer : MonoBehaviour
             renderTexture.Release();
             Destroy(renderTexture);
         }
-        if (circularMat != null)
-            Destroy(circularMat);
     }
 }

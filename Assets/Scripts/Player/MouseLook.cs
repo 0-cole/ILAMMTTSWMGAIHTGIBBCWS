@@ -34,7 +34,6 @@ public class MouseLook : MonoBehaviour
         {
             GameSettings.Instance.OnSettingsChanged += ApplySettings;
             ApplySettings();
-            settingsSubscribed = true;
         }
     }
 
@@ -60,14 +59,6 @@ public class MouseLook : MonoBehaviour
     
     void Update()
     {
-        // Late-subscribe if GameSettings wasn't ready at Start
-        if (!settingsSubscribed && GameSettings.Instance != null)
-        {
-            GameSettings.Instance.OnSettingsChanged += ApplySettings;
-            ApplySettings();
-            settingsSubscribed = true;
-        }
-
         // Don't process mouse look if paused
         if (Time.timeScale == 0f || PauseManager.IsGamePaused)
         {

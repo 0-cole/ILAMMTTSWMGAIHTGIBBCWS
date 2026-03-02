@@ -1,7 +1,7 @@
 let shadowWizardGang = [
-    ("Glonk", 10, true);
-    ("Billboard Bob", 12, true);
-    ("The Purple One", 8, true);
+    ("Glonk", 100, true);
+    ("Billboard Bob", 200, true);
+    ("The Purple One", 150, true);
 ]
 
 let totalStolen = 
@@ -9,7 +9,6 @@ let totalStolen =
     |> List.map (fun (_, gold, _) -> gold) 
     |> List.fold (+) 0
 
-printfn "Total money stolen by shadow wizard money gang: $%d" totalStolen
-printfn "Spells required to get it back: ALL OF THEM"
-printfn "Is this a proportionate response? NO"
-printfn "Do we care? ALSO NO"
+printfn "Total money stolen by shadow wizard money gang: %d" totalStolen
+printfn "Spells required to get it back: %d" (totalStolen / 10)
+printfn "Will we get it back? ABSOLUTELY"

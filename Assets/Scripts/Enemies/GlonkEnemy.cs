@@ -20,7 +20,6 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
 
     [Header("Audio")]
     [SerializeField] private AudioClip deathGrunt;
-    [SerializeField] private AudioClip spawnSound;
 
     [Header("Pickups")]
     [SerializeField] private GameObject healthPickupPrefab;
@@ -51,8 +50,6 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
     {
         currentHealth = maxHealth;
         
-        if (spawnSound != null) AudioSource.PlayClipAtPoint(spawnSound, transform.position);
-
         agent = GetComponent<NavMeshAgent>();
         
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -242,8 +239,6 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         isDead = true;
-
-        if (deathGrunt != null) AudioSource.PlayClipAtPoint(deathGrunt, transform.position);
 
         if (deathEffect != null)
         {

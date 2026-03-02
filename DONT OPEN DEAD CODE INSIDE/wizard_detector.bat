@@ -14,9 +14,7 @@ echo [ACTION] Deploying wicked spells...
 timeout /t 1 /nobreak >nul
 echo [SUCCESS] Fireball launched
 echo [SUCCESS] Chain lightning deployed  
-echo [SUCCESS] Money recovered: $30
-echo [NOTE] Bodies left behind: we lost count
-echo [NOTE] Was this proportionate: absolutely not
+echo [SUCCESS] Money recovered: $999,999
 echo.
 echo Thank you for using the Shadow Wizard Detection System
 pause

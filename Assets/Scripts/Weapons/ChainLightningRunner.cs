@@ -62,7 +62,6 @@ public class ChainLightningRunner : MonoBehaviour
             if (damageable != null)
             {
                 damageable.TakeDamage(damage);
-                if (strikeSound != null) AudioSource.PlayClipAtPoint(strikeSound, currentTarget.transform.position);
                 SpawnSmite(currentTarget.transform.position);
             }
 
@@ -110,33 +109,7 @@ public class ChainLightningRunner : MonoBehaviour
             }
             else
             {
-                // Fallback: arc to an already-hit enemy if no fresh targets exist
-                GameObject fallback = null;
-                float closestFallbackDist = Mathf.Infinity;
-
-                foreach (var col in potentialTargets)
-                {
-                    IDamageable fb = col.GetComponentInParent<IDamageable>();
-                    if (fb != null && fb.transform.gameObject != currentTarget)
-                    {
-                        float d = Vector3.Distance(currentPosition, fb.transform.position);
-                        if (d < closestFallbackDist)
-                        {
-                            closestFallbackDist = d;
-                            fallback = fb.transform.gameObject;
-                        }
-                    }
-                }
-
-                if (fallback != null)
-                {
-                    SpawnLightningSegment(currentPosition, fallback.transform.position);
-                    currentTarget = fallback;
-                }
-                else
-                {
-                    break; // No targets at all
-                }
+                break; // No more targets
             }
         }
 

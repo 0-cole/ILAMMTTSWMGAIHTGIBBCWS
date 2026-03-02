@@ -51,7 +51,6 @@ public class PauseManager : MonoBehaviour
     {
         if (pauseCanvas != null) pauseCanvas.SetActive(false);
         Time.timeScale = 1f;
-        AudioListener.pause = false;
         IsGamePaused = false;
         
         if (cursorManager != null) cursorManager.LockCursor();
@@ -91,9 +90,7 @@ public class PauseManager : MonoBehaviour
     public void ReturnToMainMenu()
     {
         Time.timeScale = 1f;
-        AudioListener.pause = false;
         IsGamePaused = false;
-        IntroSplash.SkipIntro = true;
         SceneManager.LoadScene("MainMenu");
     }
 

@@ -7,6 +7,8 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float runSpeed = 12f;
     [SerializeField] private float airAcceleration = 10f;
+    [SerializeField] private float groundAcceleration = 14f;
+    [SerializeField] private float friction = 8f;
     
     [Header("Jump Settings")]
     [SerializeField] private float jumpHeight = 2f;
@@ -21,7 +23,7 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float airControl = 0.3f;
 
     [Header("Wall Jump")]
-    [SerializeField] private float wallSlideDuration = 2f;
+    [SerializeField] private float wallSlideDuration = 3f;
     [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] private float wallJumpForce = 15f;
     [SerializeField] private Camera playerCamera; // Assignment needed in Inspector or detecting Main Camera
@@ -31,12 +33,6 @@ public class DoomMovement : MonoBehaviour
     private Vector3 wallNormal;
     private float wallJumpCooldownTimer;
     
-    [Header("Audio")]
-    [SerializeField] private AudioClip jumpGrunt;
-    [SerializeField] private float doubleJumpPitchBoost = 1.3f;
-    [SerializeField] private float jumpGruntVolume = 0.15f;
-    private AudioSource audioSource;
-
     private CharacterController controller;
     private Vector3 velocity;
     private bool isGrounded;
@@ -44,12 +40,7 @@ public class DoomMovement : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         if (playerCamera == null) playerCamera = Camera.main;
-
-        // Force wall slide duration to override stale serialized values
-        wallSlideDuration = 2f;
     }
     
     void Update()
@@ -77,7 +68,6 @@ public class DoomMovement : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * gravity);
                 jumpCount = 1;
-                PlayJumpGrunt(1f);
             }
         }
         else
@@ -89,7 +79,6 @@ public class DoomMovement : MonoBehaviour
             {
                 velocity.y = Mathf.Sqrt(2f * jumpHeight * doubleJumpMultiplier * gravity);
                 jumpCount = maxJumps;
-                PlayJumpGrunt(doubleJumpPitchBoost);
             }
         }
         
@@ -98,11 +87,9 @@ public class DoomMovement : MonoBehaviour
 
         if (isWallSliding)
         {
-            // Wall Slide Logic - allow lateral movement along the wall
-            Vector3 slideRight = Vector3.Cross(wallNormal, Vector3.up).normalized;
-            float lateral = Input.GetAxisRaw("Horizontal");
-            velocity.x = slideRight.x * lateral * moveSpeed * 0.35f;
-            velocity.z = slideRight.z * lateral * moveSpeed * 0.35f;
+            // Wall Slide Logic - slow the fall instead of freezing
+            velocity.x = 0;
+            velocity.z = 0;
             velocity.y = Mathf.Max(velocity.y, -wallSlideSpeed);
             wallSlideTimer -= Time.deltaTime;
 
@@ -148,25 +135,25 @@ public class DoomMovement : MonoBehaviour
     
     private void GroundMove(Vector3 inputDirection, bool sprint)
     {
+        // Calculate target speed
         float targetSpeed = sprint ? runSpeed : moveSpeed;
         
+        // Apply friction
+        if (inputDirection.magnitude < 0.1f)
+        {
+            float drop = velocity.magnitude * friction * Time.deltaTime;
+            velocity *= Mathf.Max(velocity.magnitude - drop, 0) / Mathf.Max(velocity.magnitude, 0.001f);
+        }
+        
+        // Accelerate
         if (inputDirection.magnitude > 0.1f)
         {
-            // Move directly at target speed
             Vector3 targetVelocity = inputDirection * targetSpeed;
-            velocity.x = targetVelocity.x;
-            velocity.z = targetVelocity.z;
-        }
-        else
-        {
-            // Slight deceleration for visual smoothness
-            velocity.x *= 0.85f;
-            velocity.z *= 0.85f;
-            if (new Vector3(velocity.x, 0, velocity.z).magnitude < 0.1f)
-            {
-                velocity.x = 0;
-                velocity.z = 0;
-            }
+            velocity = Vector3.MoveTowards(
+                new Vector3(velocity.x, 0, velocity.z),
+                targetVelocity,
+                groundAcceleration * Time.deltaTime
+            );
         }
     }
     
@@ -191,14 +178,6 @@ public class DoomMovement : MonoBehaviour
     public float GetSpeed()
     {
         return new Vector3(velocity.x, 0, velocity.z).magnitude;
-    }
-
-    private void PlayJumpGrunt(float pitch)
-    {
-        if (jumpGrunt == null) return;
-        audioSource.pitch = pitch;
-        audioSource.PlayOneShot(jumpGrunt, jumpGruntVolume);
-        audioSource.pitch = 1f;
     }
 
     // Handle collisions

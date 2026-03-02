@@ -20,15 +20,12 @@ func (w *ShadowWizard) GetHit(damage int) string {
 
 func main() {
 	gang := []ShadowWizard{
-		{"Glonk", 100, 10, true},
-		{"Billboard Barry", 200, 8, true},
-		{"The Lime Wizard", 150, 7, true},
-		{"The King", 9999, 5, true}, // grieving father. you monster.
+		{"Glonk", 100, 5000, true},
+		{"Billboard Barry", 200, 3000, true},
+		{"The Lime Wizard", 150, 7000, true},
 	}
 
 	fmt.Println("=== WICKED SPELL COMBAT LOG ===")
-	fmt.Println("=== (total amount stolen: $30) ===")
-	fmt.Println("=== (was this worth it: no)    ===")
 	for i := range gang {
 		fmt.Println(gang[i].GetHit(9999)) // wicked spells are OP
 	}
