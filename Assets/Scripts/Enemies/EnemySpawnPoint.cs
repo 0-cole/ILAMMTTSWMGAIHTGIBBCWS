@@ -31,6 +31,7 @@ public class EnemySpawnPoint : MonoBehaviour
 
     [Header("Effects")]
     public GameObject smokeEffectPrefab;
+    public AudioClip spawnSound;
 
     [Header("Billboard Settings")]
     public Sprite[] billboardSprites;
@@ -47,7 +48,7 @@ public class EnemySpawnPoint : MonoBehaviour
         if (hasSpawned) return null;
         hasSpawned = true;
 
-        // Smoke plume — spawn on enemy, hard 0.5s fade-out
+        // Smoke plume — emit for 0.5s, particles fade out over 0.25s
         if (smokeEffectPrefab != null)
         {
             GameObject smoke = Instantiate(smokeEffectPrefab, transform.position, Quaternion.identity);
@@ -56,11 +57,11 @@ public class EnemySpawnPoint : MonoBehaviour
             {
                 var main = ps.main;
                 main.loop = false;
-                main.duration = 0.1f;
-                main.startLifetime = 0.5f;
+                main.duration = 0.5f;
+                main.startLifetime = 0.25f;
                 main.stopAction = ParticleSystemStopAction.Destroy;
 
-                // Force fade-out over particle lifetime
+                // Fade alpha to 0 over each particle's lifetime
                 var col = ps.colorOverLifetime;
                 col.enabled = true;
                 Gradient grad = new Gradient();
@@ -69,12 +70,18 @@ public class EnemySpawnPoint : MonoBehaviour
                     new GradientAlphaKey[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) }
                 );
                 col.color = grad;
+
+                ps.Play();
             }
             else
             {
-                Destroy(smoke, 0.5f);
+                Destroy(smoke, 0.75f);
             }
         }
+
+        // Spawn sound
+        if (spawnSound != null)
+            AudioSource.PlayClipAtPoint(spawnSound, transform.position, 1f);
 
         if (enemyType == EnemyType.Glonk)
         {
