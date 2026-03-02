@@ -51,6 +51,7 @@ public class PauseManager : MonoBehaviour
     {
         if (pauseCanvas != null) pauseCanvas.SetActive(false);
         Time.timeScale = 1f;
+        AudioListener.pause = false;
         IsGamePaused = false;
         
         if (cursorManager != null) cursorManager.LockCursor();

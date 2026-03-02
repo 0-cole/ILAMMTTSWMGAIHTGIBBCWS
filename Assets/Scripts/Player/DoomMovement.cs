@@ -303,9 +303,14 @@ public class DoomMovement : MonoBehaviour
             }
 
             // Only stick if airborne, moving into wall, and not already sticking
+            // Also require hit point is beside the player (not a ceiling edge above)
             if (!isGrounded && !isWallSliding && velocity.y < 0)
             {
-                if (wallJumpCooldownTimer <= 0) 
+                float playerMidY = transform.position.y;
+                float hitRelativeY = hit.point.y - playerMidY;
+                bool hitIsBesidePlayer = hitRelativeY < controller.height * 0.5f;
+
+                if (wallJumpCooldownTimer <= 0 && hitIsBesidePlayer) 
                 {
                      isWallSliding = true;
                      wallSlideTimer = wallSlideDuration;
