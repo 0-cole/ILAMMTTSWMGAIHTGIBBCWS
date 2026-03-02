@@ -94,6 +94,10 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     {
         if (fireballPrefab == null) return;
 
+        // Play attack sound
+        if (attackGrunt != null)
+            AudioSource.PlayClipAtPoint(attackGrunt, transform.position, 0.8f);
+
         // Aim at the player
         Vector3 direction = (playerTransform.position - transform.position).normalized;
         
@@ -139,6 +143,10 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         isDead = true;
+
+        // Play death sound at this position (survives Destroy)
+        if (deathGrunt != null)
+            AudioSource.PlayClipAtPoint(deathGrunt, transform.position, 1f);
 
         if (deathEffect != null)
         {

@@ -242,6 +242,10 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
         if (isDead) return;
         isDead = true;
 
+        // Play death sound at this position (survives Destroy)
+        if (deathGrunt != null)
+            AudioSource.PlayClipAtPoint(deathGrunt, transform.position, 1f);
+
         if (deathEffect != null)
         {
             Instantiate(deathEffect, transform.position, Quaternion.identity);

@@ -47,11 +47,21 @@ public class EnemySpawnPoint : MonoBehaviour
         if (hasSpawned) return null;
         hasSpawned = true;
 
-        // Smoke plume
+        // Smoke plume — spawn at enemy feet, fade out naturally
         if (smokeEffectPrefab != null)
         {
             GameObject smoke = Instantiate(smokeEffectPrefab, transform.position, Quaternion.identity);
-            Destroy(smoke, 3f);
+            var ps = smoke.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+                main.loop = false;
+                main.stopAction = ParticleSystemStopAction.Destroy;
+            }
+            else
+            {
+                Destroy(smoke, 5f);
+            }
         }
 
         if (enemyType == EnemyType.Glonk)

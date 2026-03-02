@@ -374,6 +374,14 @@ public class WeaponController : MonoBehaviour
             targetPoint = playerCamera.position + playerCamera.forward * 1000f;
         }
 
+        // Play fireball sound
+        if (fireballSound != null)
+        {
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.PlayOneShot(fireballSound, 0.7f);
+        }
+
         // Create fireball
         if (fireballPrefab && firePoint)
         {
