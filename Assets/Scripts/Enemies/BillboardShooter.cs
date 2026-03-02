@@ -145,20 +145,34 @@ public class BillboardShooter : MonoBehaviour, IDamageable
             Instantiate(deathEffect, transform.position, Quaternion.identity);
         }
 
-        // Drop pickups
-        SpawnPickup(healthPickupPrefab, healthDropChance);
-        SpawnPickup(manaPickupPrefab, manaDropChance);
+        // Smart drop — pick whichever the player needs more
+        SpawnSmartPickup();
 
         Destroy(gameObject);
     }
 
-    void SpawnPickup(GameObject pickupPrefab, float dropChance)
+    void SpawnSmartPickup()
     {
-        if (pickupPrefab == null) return;
+        if (healthPickupPrefab == null && manaPickupPrefab == null) return;
+
+        float dropChance = Mathf.Max(healthDropChance, manaDropChance);
         if (Random.value > dropChance) return;
 
-        GameObject pickup = Instantiate(pickupPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        float healthPercent = 1f;
+        float manaPercent = 1f;
+        var ph = FindFirstObjectByType<PlayerHealth>();
+        var wc = FindFirstObjectByType<WeaponController>();
+        if (ph != null) healthPercent = ph.GetHealthPercent();
+        if (wc != null && wc.maxMana > 0) manaPercent = wc.currentMana / wc.maxMana;
 
+        GameObject prefab;
+        if (healthPickupPrefab == null) prefab = manaPickupPrefab;
+        else if (manaPickupPrefab == null) prefab = healthPickupPrefab;
+        else if (healthPercent < manaPercent) prefab = healthPickupPrefab;
+        else if (manaPercent < healthPercent) prefab = manaPickupPrefab;
+        else prefab = Random.value < 0.5f ? healthPickupPrefab : manaPickupPrefab;
+
+        GameObject pickup = Instantiate(prefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
         Rigidbody rb = pickup.GetComponent<Rigidbody>();
         if (rb != null)
         {

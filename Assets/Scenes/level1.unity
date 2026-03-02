@@ -104093,6 +104093,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2041060669}
   - component: {fileID: 2041060670}
+  - component: {fileID: 2041060671}
   m_Layer: 0
   m_Name: AmbiencePlayer
   m_TagString: Untagged
@@ -104130,12 +104131,25 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 4.964242, y: 2.499238, z: 8.936182}
   m_Center: {x: -1.982121, y: -0.749619, z: -0.032946587}
+--- !u!114 &2041060671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041060668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a05357691e1eb2c4991a846c7652024f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeDuration: 2
 --- !u!43 &2056595411
 Mesh:
   m_ObjectHideFlags: 0
