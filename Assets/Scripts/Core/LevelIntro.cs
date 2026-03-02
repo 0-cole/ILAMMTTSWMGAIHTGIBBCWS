@@ -31,8 +31,8 @@ public class LevelIntro : MonoBehaviour
     [Header("Chute (Optional)")]
     [Tooltip("A tube segment prefab (4 walls). Spawns centered on the player as they fall.")]
     [SerializeField] private GameObject chutePrefab;
-    [Tooltip("Empty child inside the chute prefab placed at its visual center. Used to align the prefab on the player.")]
-    [SerializeField] private Transform chuteCenterPoint;
+    [Tooltip("Manual XYZ tweak added AFTER auto-centering. Use to nudge the chute if it's slightly off.")]
+    [SerializeField] private Vector3 chuteOffset = Vector3.zero;
     [Tooltip("Height of the walls in the chute prefab (check ProBuilder Object Size Y).")]
     [SerializeField] private float wallHeight = 4.17f;
     [Tooltip("Stop spawning segments this many meters above the landing point.")]
@@ -157,9 +157,8 @@ public class LevelIntro : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns the chute prefab centered on the player.
-    /// Uses chuteCenterPoint (an empty child at the visual center of the prefab)
-    /// when assigned; otherwise falls back to averaging direct children.
+    /// Spawns the chute prefab centered on the player by averaging
+    /// direct children positions, then applies the manual chuteOffset tweak.
     /// </summary>
     private void SpawnChuteCentered()
     {
@@ -168,25 +167,18 @@ public class LevelIntro : MonoBehaviour
         // Instantiate at origin first
         GameObject seg = Instantiate(chutePrefab, Vector3.zero, Quaternion.identity);
 
-        if (chuteCenterPoint != null)
+        // Average direct children positions to find the visual center
+        Vector3 sum = Vector3.zero;
+        int count = 0;
+        foreach (Transform child in seg.transform)
         {
-            // Use the manually-placed center point's local position
-            Vector3 localCenter = chuteCenterPoint.localPosition;
-            // After spawning at origin, the center point is at localCenter in world space
-            seg.transform.position = playerPos - localCenter;
+            sum += child.position;
+            count++;
         }
-        else
-        {
-            // Fallback: average direct children positions
-            Vector3 sum = Vector3.zero;
-            int count = 0;
-            foreach (Transform child in seg.transform)
-            {
-                sum += child.position;
-                count++;
-            }
-            seg.transform.position = count > 0 ? playerPos - (sum / count) : playerPos;
-        }
+
+        Vector3 childCenter = count > 0 ? sum / count : Vector3.zero;
+        // Shift so child center aligns with player, then apply manual offset
+        seg.transform.position = playerPos - childCenter + chuteOffset;
 
         seg.name = "ChuteSegment_" + chuteSegments.Count;
 

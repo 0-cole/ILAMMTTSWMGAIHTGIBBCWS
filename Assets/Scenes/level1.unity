@@ -18933,6 +18933,11 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!4 &257381532 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7259608498337715246, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+  m_PrefabInstance: {fileID: 81753518}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &259035379
 Mesh:
   m_ObjectHideFlags: 0
@@ -45149,6 +45154,7 @@ MonoBehaviour:
   crashSound: {fileID: 8300000, guid: ac9bd57aaf8a4f64ebc0b3dc3648d198, type: 3}
   crashVolume: 0.9
   chutePrefab: {fileID: 4566248679570728423, guid: c932b79b5964fbb48bc8a00825c5ae87, type: 3}
+  chuteCenterPoint: {fileID: 257381532}
   wallHeight: 4.17
   stopSpawningAboveLanding: 10
   ceilingCapPrefab: {fileID: 795818733918438622, guid: c2710c41291cc5845aa620ce017624b4, type: 3}
