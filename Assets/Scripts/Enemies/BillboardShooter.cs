@@ -27,8 +27,8 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     [Header("Pickups")]
     [SerializeField] private GameObject healthPickupPrefab;
     [SerializeField] private GameObject manaPickupPrefab;
-    [Range(0f, 1f)] [SerializeField] private float healthDropChance = 0.4f;
-    [Range(0f, 1f)] [SerializeField] private float manaDropChance = 0.6f;
+    [Range(0f, 1f)] [SerializeField] private float healthDropChance = 0.1f;
+    [Range(0f, 1f)] [SerializeField] private float manaDropChance = 0.15f;
     [SerializeField] private float pickupSpawnForce = 3f;
 
     private Transform playerTransform;
@@ -51,6 +51,8 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     void Start()
     {
         currentHealth = maxHealth;
+        healthDropChance = 0.1f;
+        manaDropChance = 0.15f;
         mainCamera = Camera.main;
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");

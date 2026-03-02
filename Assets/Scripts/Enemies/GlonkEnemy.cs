@@ -24,8 +24,8 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
     [Header("Pickups")]
     [SerializeField] private GameObject healthPickupPrefab;
     [SerializeField] private GameObject manaPickupPrefab;
-    [Range(0f, 1f)] [SerializeField] private float healthDropChance = 0.3f;
-    [Range(0f, 1f)] [SerializeField] private float manaDropChance = 0.5f;
+    [Range(0f, 1f)] [SerializeField] private float healthDropChance = 0.1f;
+    [Range(0f, 1f)] [SerializeField] private float manaDropChance = 0.15f;
     [SerializeField] private float pickupSpawnForce = 3f;
 
     private NavMeshAgent agent;
@@ -49,6 +49,8 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
     void Start()
     {
         currentHealth = maxHealth;
+        healthDropChance = 0.1f;
+        manaDropChance = 0.15f;
         
         agent = GetComponent<NavMeshAgent>();
         

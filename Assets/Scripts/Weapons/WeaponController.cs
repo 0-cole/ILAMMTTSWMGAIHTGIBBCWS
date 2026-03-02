@@ -280,6 +280,7 @@ public class WeaponController : MonoBehaviour
         // Ensure audio sources exist
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.volume = 1f; // Ensure base volume is full so PlayOneShot works correctly
         if (parryAudioSource == null)
         {
             parryAudioSource = gameObject.AddComponent<AudioSource>();

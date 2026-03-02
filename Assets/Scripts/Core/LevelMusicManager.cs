@@ -33,12 +33,12 @@ public class LevelMusicManager : MonoBehaviour
 
     void Start()
     {
+        // Don't auto-play ambience — AmbiencePlayer trigger handles fade-in
         if (ambienceClip != null)
         {
             ambienceSource.clip = ambienceClip;
             ambienceSource.loop = true;
-            ambienceSource.volume = ambienceVolume * MusicMultiplier;
-            ambienceSource.Play();
+            ambienceSource.volume = 0f;
         }
 
         if (combatSource != null)
@@ -71,8 +71,35 @@ public class LevelMusicManager : MonoBehaviour
     /// </summary>
     public void StopAmbience()
     {
+        StopAllCoroutines();
         if (ambienceSource != null)
             ambienceSource.Stop();
+    }
+
+    /// <summary>
+    /// Fade in ambience over the given duration.
+    /// </summary>
+    public void FadeInAmbience(float duration = 2f)
+    {
+        if (ambienceSource == null || ambienceClip == null) return;
+        ambienceSource.clip = ambienceClip;
+        ambienceSource.loop = true;
+        ambienceSource.volume = 0f;
+        ambienceSource.Play();
+        StartCoroutine(FadeAmbience(ambienceVolume * MusicMultiplier, duration));
+    }
+
+    private System.Collections.IEnumerator FadeAmbience(float targetVolume, float duration)
+    {
+        float start = ambienceSource.volume;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            ambienceSource.volume = Mathf.Lerp(start, targetVolume, t / duration);
+            yield return null;
+        }
+        ambienceSource.volume = targetVolume;
     }
 
     private void ApplyMusicVolume()
