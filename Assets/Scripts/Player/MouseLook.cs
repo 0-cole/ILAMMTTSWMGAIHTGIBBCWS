@@ -17,7 +17,6 @@ public class MouseLook : MonoBehaviour
     private float xRotation = 0f;
     private Vector2 currentMouseDelta;
     private Vector2 currentMouseDeltaVelocity;
-    private bool settingsSubscribed = false;
 
     void Start()
     {
