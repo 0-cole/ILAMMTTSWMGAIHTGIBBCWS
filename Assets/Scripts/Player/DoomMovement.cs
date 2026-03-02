@@ -224,6 +224,12 @@ public class DoomMovement : MonoBehaviour
         }
     }
     
+    void OnDisable()
+    {
+        if (footstepSource != null && footstepSource.isPlaying) footstepSource.Stop();
+        if (wallSlideSource != null && wallSlideSource.isPlaying) wallSlideSource.Stop();
+    }
+
     // Public method to get current speed (useful for effects)
     public float GetSpeed()
     {

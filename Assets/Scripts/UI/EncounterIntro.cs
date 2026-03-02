@@ -82,8 +82,10 @@ public class EncounterIntro : MonoBehaviour
         // Freeze everything — disable player movement and all enemy AI
         var playerMove = FindFirstObjectByType<DoomMovement>();
         var playerLook = FindFirstObjectByType<MouseLook>();
+        var viewBob = FindFirstObjectByType<ViewBob>();
         if (playerMove != null) playerMove.enabled = false;
         if (playerLook != null) playerLook.enabled = false;
+        if (viewBob != null) viewBob.enabled = false;
 
         // Freeze all enemies
         var glonks = FindObjectsByType<GlonkEnemy>(FindObjectsSortMode.None);
@@ -154,6 +156,7 @@ public class EncounterIntro : MonoBehaviour
         // Unfreeze everything
         if (playerMove != null) playerMove.enabled = true;
         if (playerLook != null) playerLook.enabled = true;
+        if (viewBob != null) viewBob.enabled = true;
         foreach (var g in glonks) g.enabled = true;
         foreach (var b in billboards) b.enabled = true;
 
