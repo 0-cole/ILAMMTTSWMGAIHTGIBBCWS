@@ -28,8 +28,15 @@ public class DoomMovement : MonoBehaviour
     [SerializeField] private float footstepSpeedThreshold = 3f;
     [SerializeField] private AudioClip wallSlideSound;
     [SerializeField] private float wallSlideVolume = 0.5f;
+    [SerializeField] private AudioClip fallSound;
+    [SerializeField] private float fallVolume = 0.3f;
+    [SerializeField] private AudioClip crashSound;
+    [SerializeField] private float crashVolume = 0.6f;
     private AudioSource footstepSource;
     private AudioSource wallSlideSource;
+    private AudioSource fallSource;
+    private float lastGroundedY;
+    private bool isFalling;
 
     [Header("Wall Jump")]
     [SerializeField] private float wallSlideDuration = 3f;
@@ -70,6 +77,18 @@ public class DoomMovement : MonoBehaviour
             wallSlideSource.playOnAwake = false;
             wallSlideSource.spatialBlend = 0f;
         }
+
+        if (fallSound != null)
+        {
+            fallSource = gameObject.AddComponent<AudioSource>();
+            fallSource.clip = fallSound;
+            fallSource.loop = true;
+            fallSource.volume = fallVolume;
+            fallSource.playOnAwake = false;
+            fallSource.spatialBlend = 0f;
+        }
+
+        lastGroundedY = transform.position.y;
     }
     
     void Update()
@@ -156,10 +175,38 @@ public class DoomMovement : MonoBehaviour
         // Reset vertical velocity if grounded
         if (isGrounded && velocity.y < 0)
         {
+            // Crash sound on landing if we were falling
+            if (isFalling)
+            {
+                isFalling = false;
+                if (fallSource != null && fallSource.isPlaying)
+                    fallSource.Stop();
+                if (crashSound != null)
+                    AudioSource.PlayClipAtPoint(crashSound, transform.position, crashVolume);
+            }
+
             velocity.y = -2f; // Small downward force to keep grounded
             isWallSliding = false; // Reset wall slide on ground
             jumpCount = 0; // Reset double jump
+            lastGroundedY = transform.position.y;
         }
+
+        // Fall detection — trigger when fallen more than double jump height
+        if (!isGrounded && velocity.y < 0)
+        {
+            float doubleJumpHeight = jumpHeight * doubleJumpMultiplier;
+            float fallDist = lastGroundedY - transform.position.y;
+            if (!isFalling && fallDist > doubleJumpHeight)
+            {
+                isFalling = true;
+                if (fallSource != null && !fallSource.isPlaying)
+                    fallSource.Play();
+            }
+        }
+
+        // Update lastGroundedY when grounded or going up
+        if (isGrounded || velocity.y > 0)
+            lastGroundedY = Mathf.Max(lastGroundedY, transform.position.y);
 
         // Footstep audio — only when actively pressing movement keys while grounded
         if (footstepSource != null)
@@ -228,6 +275,8 @@ public class DoomMovement : MonoBehaviour
     {
         if (footstepSource != null && footstepSource.isPlaying) footstepSource.Stop();
         if (wallSlideSource != null && wallSlideSource.isPlaying) wallSlideSource.Stop();
+        if (fallSource != null && fallSource.isPlaying) fallSource.Stop();
+        isFalling = false;
     }
 
     // Public method to get current speed (useful for effects)
