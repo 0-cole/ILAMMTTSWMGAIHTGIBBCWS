@@ -15,6 +15,7 @@ public class BillboardShooter : MonoBehaviour, IDamageable
     [SerializeField] private float fireballSpeed = 10f;
     [SerializeField] private float detectionRange = 25f;
     [SerializeField] private float spawnOffset = 1.2f; // How far in front to spawn the fireball
+    [SerializeField] private float initialShootDelay = 2f; // Seconds to wait before first shot
 
     [Header("Effects")]
     [SerializeField] private GameObject deathEffect;
@@ -58,6 +59,7 @@ public class BillboardShooter : MonoBehaviour, IDamageable
             playerTransform = playerObj.transform;
         }
 
+        nextFireTime = Time.time + initialShootDelay;
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 

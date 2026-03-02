@@ -22,6 +22,11 @@ public class DoomMovement : MonoBehaviour
     [Header("Air Control")]
     [SerializeField] private float airControl = 0.3f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip footstepLoop;
+    [SerializeField] private float footstepVolume = 0.4f;
+    private AudioSource footstepSource;
+
     [Header("Wall Jump")]
     [SerializeField] private float wallSlideDuration = 3f;
     [SerializeField] private float wallSlideSpeed = 2f;
@@ -41,6 +46,16 @@ public class DoomMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         if (playerCamera == null) playerCamera = Camera.main;
+
+        if (footstepLoop != null)
+        {
+            footstepSource = gameObject.AddComponent<AudioSource>();
+            footstepSource.clip = footstepLoop;
+            footstepSource.loop = true;
+            footstepSource.volume = footstepVolume;
+            footstepSource.playOnAwake = false;
+            footstepSource.spatialBlend = 0f;
+        }
     }
     
     void Update()
@@ -130,6 +145,17 @@ public class DoomMovement : MonoBehaviour
             velocity.y = -2f; // Small downward force to keep grounded
             isWallSliding = false; // Reset wall slide on ground
             jumpCount = 0; // Reset double jump
+        }
+
+        // Footstep audio
+        if (footstepSource != null)
+        {
+            float hSpeed = new Vector3(velocity.x, 0, velocity.z).magnitude;
+            bool shouldPlay = isGrounded && hSpeed > 1f;
+            if (shouldPlay && !footstepSource.isPlaying)
+                footstepSource.Play();
+            else if (!shouldPlay && footstepSource.isPlaying)
+                footstepSource.Stop();
         }
     }
     

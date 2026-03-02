@@ -44,6 +44,10 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private AudioClip fireballSound;
     [SerializeField] private AudioClip[] lightningCastSounds;
     [SerializeField] private AudioClip lightningStrikeSound;
+    [SerializeField] private AudioClip punchSound;
+    [SerializeField] private AudioClip parrySound;
+    [SerializeField] private float punchSoundVolume = 0.6f;
+    [SerializeField] private float parrySoundVolume = 0.8f;
     private AudioSource audioSource;
 
     [Header("Weapon System")]
@@ -272,6 +276,14 @@ public class WeaponController : MonoBehaviour
 
     void ShootPunch()
     {
+        // Audio
+        if (punchSound != null)
+        {
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.PlayOneShot(punchSound, punchSoundVolume);
+        }
+
         // 1. Visuals
         if (punchOverlay != null)
         {
@@ -297,8 +309,14 @@ public class WeaponController : MonoBehaviour
 
         if (hitProjectile) 
         {
-            // Optional: Add specific "Parry" sound or feedback here
-            return; // If we punched a projectile, maybe we don't punch the enemy too? Or maybe we DO? Let's return for now to emphasize the parry.
+            // Parry sound
+            if (parrySound != null)
+            {
+                if (audioSource == null) audioSource = GetComponent<AudioSource>();
+                if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.PlayOneShot(parrySound, parrySoundVolume);
+            }
+            return;
         }
 
         // 3. Hitscan Attack (Only if no projectile was boosted)
