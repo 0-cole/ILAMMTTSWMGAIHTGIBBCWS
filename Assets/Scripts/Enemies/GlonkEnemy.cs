@@ -285,5 +285,4 @@ public class GlonkEnemy : MonoBehaviour, IDamageable
             rb.AddForce(randomDirection * pickupSpawnForce, ForceMode.Impulse);
         }
     }
-    }
 }
