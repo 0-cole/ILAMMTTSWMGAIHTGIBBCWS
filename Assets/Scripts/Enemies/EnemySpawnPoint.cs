@@ -47,7 +47,7 @@ public class EnemySpawnPoint : MonoBehaviour
         if (hasSpawned) return null;
         hasSpawned = true;
 
-        // Smoke plume — spawn at enemy feet, fade out naturally
+        // Smoke plume — spawn on enemy, hard 0.5s fade-out
         if (smokeEffectPrefab != null)
         {
             GameObject smoke = Instantiate(smokeEffectPrefab, transform.position, Quaternion.identity);
@@ -56,11 +56,23 @@ public class EnemySpawnPoint : MonoBehaviour
             {
                 var main = ps.main;
                 main.loop = false;
+                main.duration = 0.1f;
+                main.startLifetime = 0.5f;
                 main.stopAction = ParticleSystemStopAction.Destroy;
+
+                // Force fade-out over particle lifetime
+                var col = ps.colorOverLifetime;
+                col.enabled = true;
+                Gradient grad = new Gradient();
+                grad.SetKeys(
+                    new GradientColorKey[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                    new GradientAlphaKey[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) }
+                );
+                col.color = grad;
             }
             else
             {
-                Destroy(smoke, 5f);
+                Destroy(smoke, 0.5f);
             }
         }
 
