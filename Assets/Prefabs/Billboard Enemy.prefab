@@ -125,10 +125,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1
+  m_Radius: 0.9959866
+  m_Height: 4.721687
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: -0.24899304, y: -0.03477025, z: 0}
 --- !u!54 &5563883595083011236
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -168,19 +168,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29ad30a6eb8155b40bbc70d640d6316c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 200
+  maxHealth: 60
   currentHealth: 0
   fireballPrefab: {fileID: 1994264577554675325, guid: e06d7af0d80edf047bb87e88061affba, type: 3}
   fireRate: 2
   fireballSpeed: 10
   detectionRange: 25
   spawnOffset: 1.2
+  initialShootDelay: 2
   deathEffect: {fileID: 0}
   deathGrunt: {fileID: 8300000, guid: 48d89acf7c3c27546ba06468f035b35b, type: 3}
   attackGrunt: {fileID: 8300000, guid: 5bb0d15568fa56144b9fc0374b5fa4a6, type: 3}
-  spawnSound: {fileID: 8300000, guid: d28f1cf0e2e621949b38a5d915a442d6, type: 3}
   healthPickupPrefab: {fileID: 7796057321546028998, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}
   manaPickupPrefab: {fileID: 6900913862083638539, guid: d57a53af4adc3694dbd67915a173d1a2, type: 3}
-  healthDropChance: 0.4
-  manaDropChance: 0.6
+  healthDropChance: 0.1
+  manaDropChance: 0.15
   pickupSpawnForce: 3

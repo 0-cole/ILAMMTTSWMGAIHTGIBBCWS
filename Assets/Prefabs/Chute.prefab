@@ -248,7 +248,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 10281
+  m_VersionIndex: 10284
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -382,8 +382,8 @@ Transform:
   m_GameObject: {fileID: 831364398957601569}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -11.8777, y: 15.653, z: 16.8457}
-  m_LocalScale: {x: 0.03929683, y: 1, z: 7.3645763}
+  m_LocalPosition: {x: -11.9043, y: 15.653, z: 16.8656}
+  m_LocalScale: {x: 0.041133, y: 1, z: 7.3144975}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5416017824266464358}
@@ -456,7 +456,7 @@ MonoBehaviour:
   - m_Indexes: 0c0000000d0000000e0000000d0000000f0000000e000000
     m_SmoothingGroup: 0
     m_Uv:
-      m_UseWorldSpace: 0
+      m_UseWorldSpace: 1
       m_FlipU: 0
       m_FlipV: 0
       m_SwapUV: 0
@@ -552,10 +552,10 @@ MonoBehaviour:
   - {x: 0, y: -3.1688042}
   - {x: 8.196997, y: 1}
   - {x: 0, y: 1}
-  - {x: 1.0579615, y: -3.1688042}
-  - {x: 0, y: -3.1688042}
-  - {x: 1.0579615, y: 1}
-  - {x: 0, y: 1}
+  - {x: -8.0350685, y: 15.323792}
+  - {x: -15.773526, y: 15.323792}
+  - {x: -8.0350685, y: 19.492596}
+  - {x: -15.773526, y: 19.492596}
   - {x: 0, y: 1}
   - {x: 8.196997, y: 1}
   - {x: 0, y: -0.057961464}
@@ -600,7 +600,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 10281
+  m_VersionIndex: 10300
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -728,7 +728,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4566248679570728423}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -771,8 +771,8 @@ Transform:
   m_GameObject: {fileID: 6563061619573767325}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -15.702386, y: 15.653, z: 25.92591}
-  m_LocalScale: {x: 0.90862685, y: 1, z: 0.37827498}
+  m_LocalPosition: {x: -15.6384, y: 15.653, z: 25.5145}
+  m_LocalScale: {x: 0.87064624, y: 1, z: 0.25734046}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5416017824266464358}
@@ -989,7 +989,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 10281
+  m_VersionIndex: 10284
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1123,8 +1123,8 @@ Transform:
   m_GameObject: {fileID: 6632908946286927191}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -11.804, y: 15.653, z: 10.481}
-  m_LocalScale: {x: 0.12167578, y: 1, z: 7.2896094}
+  m_LocalPosition: {x: -12.0777, y: 15.653, z: 9.4415}
+  m_LocalScale: {x: 0.025682934, y: 1, z: 6.515178}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5416017824266464358}
@@ -1163,7 +1163,7 @@ MonoBehaviour:
   - m_Indexes: 040000000500000006000000050000000700000006000000
     m_SmoothingGroup: 0
     m_Uv:
-      m_UseWorldSpace: 0
+      m_UseWorldSpace: 1
       m_FlipU: 0
       m_FlipV: 0
       m_SwapUV: 0
@@ -1285,10 +1285,10 @@ MonoBehaviour:
   - {x: 0, y: -3.1688042}
   - {x: 8.196997, y: 1}
   - {x: 0, y: 1}
-  - {x: 1.0579615, y: -3.1688042}
-  - {x: 0, y: -3.1688042}
-  - {x: 1.0579615, y: 1}
-  - {x: 0, y: 1}
+  - {x: 15.524103, y: 15.323792}
+  - {x: 8.631294, y: 15.323792}
+  - {x: 15.524103, y: 19.492596}
+  - {x: 8.631294, y: 19.492596}
   - {x: 8.196997, y: -3.1688042}
   - {x: 0, y: -3.1688042}
   - {x: 8.196997, y: 1}
@@ -1341,7 +1341,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 10281
+  m_VersionIndex: 10522
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1529,7 +1529,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5043345571031913035, guid: 1fee6dd998d7f2044b7f0a7e3f186e3d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 15.695431
+      value: 16.082
       objectReference: {fileID: 0}
     - target: {fileID: 5043345571031913035, guid: 1fee6dd998d7f2044b7f0a7e3f186e3d, type: 3}
       propertyPath: m_LocalRotation.w
