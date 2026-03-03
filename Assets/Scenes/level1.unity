@@ -9102,6 +9102,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nextLevelName: lev
   fadeDuration: 1
+  triggered: 0
 --- !u!1001 &81753518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -59777,9 +59778,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d35681c59f48c734fbbc9f73ba986227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextLevelName: level2
   cameraRotateSpeed: 90
-  loadDelay: 4
+  centerTarget: {fileID: 0}
+  centerSpeed: 5
+  fallGravity: 35
+  maxFallSpeed: 50
+  windLoop: {fileID: 8300000, guid: b2930abbc83e9f8409088d155978270c, type: 3}
+  windVolume: 0.6
 --- !u!4 &839150872 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1944326117796974113, guid: 926cd24b769b84445b27a9f8ea211287, type: 3}

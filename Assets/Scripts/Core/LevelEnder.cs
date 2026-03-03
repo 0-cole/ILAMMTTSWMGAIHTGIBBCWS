@@ -15,10 +15,6 @@ public class LevelEnder : MonoBehaviour
     [Tooltip("How fast the camera rotates to look down (degrees/sec)")]
     [SerializeField] private float cameraRotateSpeed = 90f;
 
-    [Header("Centering")]
-    [Tooltip("Transform the player lerps to horizontally (XZ). Leave empty to use this object's position.")]
-    [SerializeField] private Transform centerTarget;
-    [SerializeField] private float centerSpeed = 5f;
 
     [Header("Fall Physics")]
     [SerializeField] private float fallGravity = 35f;
@@ -34,7 +30,6 @@ public class LevelEnder : MonoBehaviour
     private CharacterController controller;
     private AudioSource audioSource;
     private float fallSpeed;
-    private Vector3 targetXZ;
 
     void OnTriggerEnter(Collider other)
     {
@@ -54,10 +49,6 @@ public class LevelEnder : MonoBehaviour
         controller = other.GetComponent<CharacterController>();
         cameraTransform = other.GetComponentInChildren<Camera>()?.transform;
         playerBody = other.transform;
-
-        // Center target defaults to this trigger's XZ
-        Vector3 ct = centerTarget != null ? centerTarget.position : transform.position;
-        targetXZ = new Vector3(ct.x, 0f, ct.z);
 
         // Wind audio
         if (windLoop != null)
@@ -81,14 +72,8 @@ public class LevelEnder : MonoBehaviour
         fallSpeed += fallGravity * Time.deltaTime;
         fallSpeed = Mathf.Min(fallSpeed, maxFallSpeed);
 
-        // Smoothly center player horizontally
-        Vector3 pos = playerBody.position;
-        float newX = Mathf.Lerp(pos.x, targetXZ.x, centerSpeed * Time.deltaTime);
-        float newZ = Mathf.Lerp(pos.z, targetXZ.z, centerSpeed * Time.deltaTime);
-
-        // Move: gravity down + horizontal centering
-        Vector3 move = new Vector3(newX - pos.x, -fallSpeed * Time.deltaTime, newZ - pos.z);
-        controller.Move(move);
+        // Move: gravity only
+        controller.Move(Vector3.down * fallSpeed * Time.deltaTime);
 
         // Scale wind volume with speed
         if (audioSource != null)
