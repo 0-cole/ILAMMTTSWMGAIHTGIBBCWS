@@ -6,6 +6,7 @@ public class WickedFireball : MonoBehaviour
     [Header("Stats")]
     [SerializeField] private float speed = 15f;
     [SerializeField] private float damage = 50f;
+    [SerializeField] private float enemyDamage = 25f;
     [SerializeField] private float lifetime = 5f;
 
     [Header("Boost Mechanics")]
@@ -272,7 +273,7 @@ public class WickedFireball : MonoBehaviour
                 if (!isPlayerOwned)
                 {
                     Debug.Log($"[Fireball] Damaging Player");
-                    playerHealth.TakeDamage(damage);
+                    playerHealth.TakeDamage(enemyDamage);
                 }
                 continue;
             }
