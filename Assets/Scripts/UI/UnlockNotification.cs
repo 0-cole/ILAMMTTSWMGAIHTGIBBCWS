@@ -36,6 +36,7 @@ public class UnlockNotification : MonoBehaviour
     {
         Instance = this;
         rectTransform = notificationGroup?.GetComponent<RectTransform>();
+        if (notificationGroup != null) notificationGroup.alpha = 0f;
     }
 
     void Start()
