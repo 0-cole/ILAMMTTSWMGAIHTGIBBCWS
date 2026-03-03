@@ -26,6 +26,13 @@ public class WeaponPickup : MonoBehaviour
 
         // Hide prompt initially
         if (pickupPrompt != null) pickupPrompt.SetActive(false);
+
+        // If player already has this weapon, remove the pickup
+        if (weaponController != null && weaponController.IsWeaponUnlocked(weaponName))
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
 
     void Update()
