@@ -166,11 +166,14 @@ public class UnlockNotification : MonoBehaviour
         {
             notificationGroup.alpha -= Time.deltaTime * fadeSpeed;
 
-            // Cleanup model once fully faded
-            if (notificationGroup.alpha <= 0)
+            // Cleanup once fully faded
+            if (notificationGroup.alpha <= 0.01f)
             {
                 notificationGroup.alpha = 0f;
                 CleanupModel();
+                // Snap to hidden position so it's fully offscreen
+                if (rectTransform != null)
+                    rectTransform.anchoredPosition = hiddenPosition;
             }
         }
     }
