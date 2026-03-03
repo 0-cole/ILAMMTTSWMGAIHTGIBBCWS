@@ -22,6 +22,6 @@ public class ManaBoostPickup : MonoBehaviour
         if (UnlockNotification.Instance != null)
             UnlockNotification.Instance.ShowUnlock("MANA BOOSTED!", icon, modelPrefab, "Regen Doubled for 20s!");
 
-        Destroy(gameObject);
+        Destroy(transform.root.gameObject);
     }
 }

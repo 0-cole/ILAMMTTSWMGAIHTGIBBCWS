@@ -9143,6 +9143,22 @@ PrefabInstance:
       propertyPath: 'lightningCastSounds.Array.data[1]'
       value: 
       objectReference: {fileID: 8300000, guid: 4998563e311fd7d4c9e5e67adeb92ac9, type: 3}
+    - target: {fileID: 370287482683129219, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: m_Color.a
+      value: 0.62352943
+      objectReference: {fileID: 0}
+    - target: {fileID: 370287482683129219, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 370287482683129219, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 370287482683129219, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3553005977769621529, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
       propertyPath: footstepLoop
       value: 
@@ -9230,6 +9246,10 @@ PrefabInstance:
     - target: {fileID: 7259608498337715246, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 8604034383877324151, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
+      propertyPath: m_Color.a
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9029966466564514171, guid: 041529da28fa49c47abf291d2409ae94, type: 3}
       propertyPath: m_Name
@@ -59779,8 +59799,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraRotateSpeed: 90
-  centerTarget: {fileID: 0}
-  centerSpeed: 5
   fallGravity: 35
   maxFallSpeed: 50
   windLoop: {fileID: 8300000, guid: b2930abbc83e9f8409088d155978270c, type: 3}
