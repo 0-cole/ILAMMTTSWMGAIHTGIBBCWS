@@ -85,7 +85,7 @@ public class LevelEnder : MonoBehaviour
         if (cameraTransform == null) yield break;
 
         Quaternion startLocal = cameraTransform.localRotation;
-        Quaternion targetLocal = Quaternion.Euler(90f, 0f, 0f);
+        Quaternion targetLocal = Quaternion.Euler(0f, 0f, 0f);
 
         float angle = Quaternion.Angle(startLocal, targetLocal);
         float duration = angle / cameraRotateSpeed;
