@@ -9100,9 +9100,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e56f9a6ca6ebf1e419d0d7f1042c5181, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextLevelName: lev
-  fadeDuration: 1
-  triggered: 0
 --- !u!1001 &81753518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -111259,6 +111256,10 @@ PrefabInstance:
     - target: {fileID: 3602429635046277865, guid: c1a32535cdfae8b4c8ccac555ac05e2e, type: 3}
       propertyPath: m_Center.z
       value: 0.32205296
+      objectReference: {fileID: 0}
+    - target: {fileID: 3602429635046277865, guid: c1a32535cdfae8b4c8ccac555ac05e2e, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6831522411640484014, guid: c1a32535cdfae8b4c8ccac555ac05e2e, type: 3}
       propertyPath: m_LocalPosition.x

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class UnlockNotification : MonoBehaviour
 {
@@ -12,24 +13,24 @@ public class UnlockNotification : MonoBehaviour
 
     [Header("Timing")]
     [SerializeField] private float displayDuration = 3f;
-    [SerializeField] private float fadeSpeed = 5f;
+    [SerializeField] private float fadeOutDuration = 0.5f;
     [SerializeField] private float slideSpeed = 8f;
     
     [Header("Slide Animation")]
-    [SerializeField] private float slideDistance = 80f; // Pixels to slide in from
+    [SerializeField] private float slideDistance = 80f;
     
     [Header("3D Settings")]
     [SerializeField] private Transform modelSpawnPoint;
     [SerializeField] private float modelSpinSpeed = 90f;
     [SerializeField] private float modelScale = 100f;
     
-    private float timer;
     private bool isShowing;
-    public bool IsShowing => isShowing || (notificationGroup != null && notificationGroup.alpha > 0);
+    public bool IsShowing => isShowing;
     private GameObject currentModelObject;
     private RectTransform rectTransform;
     private Vector2 targetPosition;
     private Vector2 hiddenPosition;
+    private Coroutine activeRoutine;
 
     public static UnlockNotification Instance;
 
@@ -50,7 +51,6 @@ public class UnlockNotification : MonoBehaviour
             flashOverlay.color = c;
         }
 
-        // Store positions for slide animation
         if (rectTransform != null)
         {
             targetPosition = rectTransform.anchoredPosition;
@@ -63,22 +63,20 @@ public class UnlockNotification : MonoBehaviour
     {
         if (notificationGroup == null) return;
 
-        // Build styled text
+        // Cancel any existing notification
+        if (activeRoutine != null) StopCoroutine(activeRoutine);
+
         string mainText = $"UNLOCKED\n<color=yellow>{weaponName.ToUpper()}</color>";
         if (!string.IsNullOrEmpty(subtitle))
-        {
             mainText += $"\n<size=50%>{subtitle}</size>";
-        }
         unlockText.text = mainText;
         
-        // Handle 2D Icon
         if (unlockIcon != null)
         {
             unlockIcon.gameObject.SetActive(icon != null && modelPrefab == null);
             unlockIcon.sprite = icon;
         }
 
-        // Handle 3D Model
         CleanupModel();
         
         if (modelPrefab != null && modelSpawnPoint != null)
@@ -90,24 +88,84 @@ public class UnlockNotification : MonoBehaviour
             SetLayerRecursively(currentModelObject, LayerMask.NameToLayer("UI")); 
         }
 
-        // Start showing
-        isShowing = true;
-        timer = displayDuration;
-        notificationGroup.alpha = 1f;
-
-        // Slide in from above
-        if (rectTransform != null)
-        {
-            rectTransform.anchoredPosition = hiddenPosition;
-        }
-
-        // Flash Effect
+        // Flash
         if (flashOverlay != null)
         {
             Color c = flashOverlay.color;
             c.a = 0.8f;
             flashOverlay.color = c;
         }
+
+        activeRoutine = StartCoroutine(NotificationLifecycle());
+    }
+
+    private IEnumerator NotificationLifecycle()
+    {
+        isShowing = true;
+        notificationGroup.alpha = 1f;
+
+        // Slide in from hidden position
+        if (rectTransform != null)
+            rectTransform.anchoredPosition = hiddenPosition;
+
+        // Force minimum durations in case serialized values are bad
+        float showTime = Mathf.Max(displayDuration, 1f);
+        float fadeTime = Mathf.Max(fadeOutDuration, 0.3f);
+
+        // Display phase — slide in + hold
+        float elapsed = 0f;
+        while (elapsed < showTime)
+        {
+            elapsed += Time.deltaTime;
+
+            // Slide toward visible position
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = Vector2.Lerp(
+                    rectTransform.anchoredPosition, targetPosition, Time.deltaTime * slideSpeed);
+
+            // Spin model
+            if (currentModelObject != null)
+                currentModelObject.transform.Rotate(Vector3.up, modelSpinSpeed * Time.deltaTime);
+
+            // Fade flash overlay
+            if (flashOverlay != null && flashOverlay.color.a > 0)
+            {
+                Color c = flashOverlay.color;
+                c.a = Mathf.MoveTowards(c.a, 0f, Time.deltaTime * 10f);
+                flashOverlay.color = c;
+            }
+
+            yield return null;
+        }
+
+        // Fade out phase
+        float startAlpha = notificationGroup.alpha;
+        elapsed = 0f;
+        while (elapsed < fadeTime)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / fadeTime;
+            notificationGroup.alpha = Mathf.Lerp(startAlpha, 0f, t);
+
+            // Slide toward hidden
+            if (rectTransform != null)
+                rectTransform.anchoredPosition = Vector2.Lerp(
+                    rectTransform.anchoredPosition, hiddenPosition, Time.deltaTime * slideSpeed);
+
+            // Keep spinning model
+            if (currentModelObject != null)
+                currentModelObject.transform.Rotate(Vector3.up, modelSpinSpeed * Time.deltaTime);
+
+            yield return null;
+        }
+
+        // Fully hidden
+        notificationGroup.alpha = 0f;
+        if (rectTransform != null)
+            rectTransform.anchoredPosition = hiddenPosition;
+        CleanupModel();
+        isShowing = false;
+        activeRoutine = null;
     }
 
     void CleanupModel()
@@ -124,58 +182,6 @@ public class UnlockNotification : MonoBehaviour
         if (newLayer < 0) return;
         obj.layer = newLayer;
         foreach (Transform child in obj.transform)
-        {
             SetLayerRecursively(child.gameObject, newLayer);
-        }
-    }
-
-    void Update()
-    {
-        // Spin 3D model
-        if (currentModelObject != null)
-        {
-            currentModelObject.transform.Rotate(Vector3.up, modelSpinSpeed * Time.deltaTime);
-        }
-
-        // Fade out flash overlay
-        if (flashOverlay != null && flashOverlay.color.a > 0)
-        {
-            Color c = flashOverlay.color;
-            c.a = Mathf.Lerp(c.a, 0f, Time.deltaTime * 10f);
-            if (c.a < 0.01f) c.a = 0f;
-            flashOverlay.color = c;
-        }
-
-        // Slide animation
-        if (rectTransform != null)
-        {
-            Vector2 goal = isShowing ? targetPosition : hiddenPosition;
-            rectTransform.anchoredPosition = Vector2.Lerp(
-                rectTransform.anchoredPosition, goal, Time.deltaTime * slideSpeed);
-        }
-
-        // Handle notification timer
-        if (isShowing)
-        {
-            timer -= Time.deltaTime;
-            if (timer <= 0)
-            {
-                isShowing = false;
-            }
-        }
-        else if (notificationGroup != null && notificationGroup.alpha > 0)
-        {
-            notificationGroup.alpha -= Time.deltaTime * fadeSpeed;
-
-            // Cleanup once fully faded
-            if (notificationGroup.alpha <= 0.01f)
-            {
-                notificationGroup.alpha = 0f;
-                CleanupModel();
-                // Snap to hidden position so it's fully offscreen
-                if (rectTransform != null)
-                    rectTransform.anchoredPosition = hiddenPosition;
-            }
-        }
     }
 }
