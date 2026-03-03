@@ -25,6 +25,7 @@ public class UnlockNotification : MonoBehaviour
     
     private float timer;
     private bool isShowing;
+    public bool IsShowing => isShowing || (notificationGroup != null && notificationGroup.alpha > 0);
     private GameObject currentModelObject;
     private RectTransform rectTransform;
     private Vector2 targetPosition;
