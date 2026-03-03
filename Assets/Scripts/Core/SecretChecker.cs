@@ -13,6 +13,7 @@ public class SecretChecker : MonoBehaviour
     [SerializeField] private CanvasGroup notificationGroup;
     [SerializeField] private TextMeshProUGUI notificationText;
     [SerializeField] private Image flashOverlay;
+    [SerializeField] private Image unlockIcon;
 
     [Header("Timing")]
     [SerializeField] private float displayDuration = 3f;
@@ -66,6 +67,9 @@ public class SecretChecker : MonoBehaviour
             notificationGroup.gameObject.SetActive(true);
             notificationGroup.alpha = 1f;
         }
+
+        // Hide the old unlock icon so it doesn't bleed through
+        if (unlockIcon != null) unlockIcon.gameObject.SetActive(false);
 
         if (notificationText != null)
             notificationText.text = $"{statName.ToUpper()} BOOSTED FOR {Mathf.RoundToInt(duration)} SECONDS!";
