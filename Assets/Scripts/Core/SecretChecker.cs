@@ -20,18 +20,13 @@ public class SecretChecker : MonoBehaviour
 
     void Awake()
     {
-        // Start fully hidden
-        if (notificationGroup != null)
-        {
-            notificationGroup.alpha = 0f;
-            notificationGroup.gameObject.SetActive(false);
-        }
+        // Don't touch notificationGroup here — UnlockNotification manages its own alpha.
+        // SecretChecker only enables/disables its own elements when a boost fires.
         if (flashOverlay != null)
         {
             Color c = flashOverlay.color;
             c.a = 0f;
             flashOverlay.color = c;
-            flashOverlay.gameObject.SetActive(false);
         }
     }
 
@@ -55,21 +50,17 @@ public class SecretChecker : MonoBehaviour
         // Flash the screen
         if (flashOverlay != null)
         {
-            flashOverlay.gameObject.SetActive(true);
             Color c = flashOverlay.color;
             c.a = 0.8f;
             flashOverlay.color = c;
         }
 
-        // Show notification panel
-        if (notificationGroup != null)
-        {
-            notificationGroup.gameObject.SetActive(true);
-            notificationGroup.alpha = 1f;
-        }
-
         // Hide the old unlock icon so it doesn't bleed through
         if (unlockIcon != null) unlockIcon.gameObject.SetActive(false);
+
+        // Show notification panel via alpha
+        if (notificationGroup != null)
+            notificationGroup.alpha = 1f;
 
         if (notificationText != null)
             notificationText.text = $"{statName.ToUpper()} BOOSTED FOR {Mathf.RoundToInt(duration)} SECONDS!";
@@ -93,17 +84,13 @@ public class SecretChecker : MonoBehaviour
             Color c = flashOverlay.color;
             c.a = 0f;
             flashOverlay.color = c;
-            flashOverlay.gameObject.SetActive(false);
         }
 
         // Hold the notification for a few seconds
         yield return new WaitForSeconds(Mathf.Max(displayDuration, 1f));
 
-        // Just kill it — no fade
+        // Just kill it — no fade, just hide via alpha
         if (notificationGroup != null)
-        {
             notificationGroup.alpha = 0f;
-            notificationGroup.gameObject.SetActive(false);
-        }
     }
 }
