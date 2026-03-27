@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Video;
 using TMPro;
 
 /// <summary>
@@ -101,6 +102,97 @@ public class MainMenuBuilder : Editor
             }
         }
 
+
+
+        // ==========================================
+        // MUSIC
+        // ==========================================
+        GameObject musicObj = new GameObject("Music");
+        AudioSource musicSource = musicObj.AddComponent<AudioSource>();
+        musicSource.playOnAwake = false;
+        musicSource.loop = true;
+        musicSource.volume = 0f;
+
+        // Load title music clip
+        AudioClip titleClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/TitleMusic.mp3");
+        if (titleClip != null) musicSource.clip = titleClip;
+        else Debug.LogWarning("[MainMenuBuilder] TitleMusic.mp3 not found at Assets/Audio/Music/TitleMusic.mp3");
+
+        musicObj.AddComponent<TitleScreenMusic>();
+
+        // ==========================================
+        // VIDEO VISUALIZER (top-right, circular with drop shadow)
+        // ==========================================
+
+        // Drop shadow behind the circle
+        GameObject vizShadow = new GameObject("VisualizerShadow");
+        vizShadow.transform.SetParent(canvasObj.transform, false);
+        RectTransform shadowRt = vizShadow.AddComponent<RectTransform>();
+        shadowRt.anchorMin = new Vector2(1f, 1f);
+        shadowRt.anchorMax = new Vector2(1f, 1f);
+        shadowRt.pivot = new Vector2(1f, 1f);
+        shadowRt.anchoredPosition = new Vector2(-17, -17); // offset by 3px for shadow
+        shadowRt.sizeDelta = new Vector2(250, 250);
+        Image shadowImg = vizShadow.AddComponent<Image>();
+        shadowImg.color = new Color(0f, 0f, 0f, 0.5f);
+        shadowImg.raycastTarget = false;
+        // Make shadow circular via sprite if available, otherwise just a dark square
+        Sprite circleSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+        if (circleSprite != null) shadowImg.sprite = circleSprite;
+
+        // Main visualizer container
+        GameObject vizObj = new GameObject("Visualizer");
+        vizObj.transform.SetParent(canvasObj.transform, false);
+        RectTransform vizRt = vizObj.AddComponent<RectTransform>();
+        vizRt.anchorMin = new Vector2(1f, 1f);
+        vizRt.anchorMax = new Vector2(1f, 1f);
+        vizRt.pivot = new Vector2(1f, 1f);
+        vizRt.anchoredPosition = new Vector2(-20, -20);
+        vizRt.sizeDelta = new Vector2(250, 250);
+
+        // Circular mask using Unity's built-in Knob sprite
+        Image vizMaskImg = vizObj.AddComponent<Image>();
+        if (circleSprite != null) vizMaskImg.sprite = circleSprite;
+        vizMaskImg.color = Color.white;
+        vizMaskImg.raycastTarget = false;
+        Mask vizMask = vizObj.AddComponent<Mask>();
+        vizMask.showMaskGraphic = false;
+
+        // RawImage for video inside the masked circle
+        GameObject vizVideoObj = new GameObject("VisualizerVideo");
+        vizVideoObj.transform.SetParent(vizObj.transform, false);
+        RectTransform vizVideoRt = vizVideoObj.AddComponent<RectTransform>();
+        vizVideoRt.anchorMin = Vector2.zero;
+        vizVideoRt.anchorMax = Vector2.one;
+        vizVideoRt.sizeDelta = Vector2.zero;
+
+        RawImage vizRawImg = vizVideoObj.AddComponent<RawImage>();
+        vizRawImg.color = new Color(1f, 1f, 1f, 0f); // Starts transparent, VideoVisualizer fades it in
+        vizRawImg.raycastTarget = false;
+
+        VideoVisualizer videoViz = vizVideoObj.AddComponent<VideoVisualizer>();
+
+        // Load the video clip via SerializedObject so the private field gets set
+        UnityEngine.Video.VideoClip vizClip = AssetDatabase.LoadAssetAtPath<UnityEngine.Video.VideoClip>("Assets/Video/TitleVisualizer.mp4");
+        if (vizClip != null)
+        {
+            SerializedObject vizSO = new SerializedObject(videoViz);
+            SerializedProperty clipProp = vizSO.FindProperty("visualizerClip");
+            if (clipProp != null)
+            {
+                clipProp.objectReferenceValue = vizClip;
+                vizSO.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+        else Debug.LogWarning("[MainMenuBuilder] TitleVisualizer.mp4 not found at Assets/Video/TitleVisualizer.mp4");
+
+        // ==========================================
+        // AUDIO VISUALIZER (spectrum bars — created at runtime by the script)
+        // ==========================================
+        // The AudioVisualizer script creates its own bars in Start(), we just need the container
+        // Positioned as a child of the canvas (it anchors bars to its own top)
+        // We skip this if you prefer just the video visualizer; both can coexist
+
         // 6. MainMenu controller
         GameObject menuController = new GameObject("MainMenuController");
         MainMenu mainMenu = menuController.AddComponent<MainMenu>();
@@ -126,14 +218,19 @@ public class MainMenuBuilder : Editor
             new Vector2(0, 0), new Vector2(350, 65), panelColor, textWhite, 22);
         settingsBtn.GetComponent<Button>().onClick.AddListener(() => { });
 
+        // How To Play Button
+        GameObject tutorialBtn = CreateButton(mainPanel.transform, "TutorialButton", "HOW TO PLAY",
+            new Vector2(0, -80), new Vector2(350, 65), panelColor, accentOrange, 22);
+        tutorialBtn.GetComponent<Button>().onClick.AddListener(() => { });
+
         // Quit Button
         GameObject quitBtn = CreateButton(mainPanel.transform, "QuitButton", "QUIT",
-            new Vector2(0, -80), new Vector2(350, 65), panelColor, accentRed, 22);
+            new Vector2(0, -160), new Vector2(350, 65), panelColor, accentRed, 22);
         quitBtn.GetComponent<Button>().onClick.AddListener(() => { });
 
         // Version text
         CreateText(mainPanel.transform, "VersionText", "v0.1 - Alpha Build",
-            new Vector2(0, -160), new Vector2(300, 30), 12, subtleGray, FontStyles.Normal, TextAlignmentOptions.Center);
+            new Vector2(0, -240), new Vector2(300, 30), 12, subtleGray, FontStyles.Normal, TextAlignmentOptions.Center);
 
         // ==========================================
         // LEVEL SELECT PANEL
@@ -160,6 +257,137 @@ public class MainMenuBuilder : Editor
         GameObject backBtn = CreateButton(levelPanel.transform, "BackButton", "← BACK",
             new Vector2(0, -180), new Vector2(200, 50), panelColor, subtleGray, 18);
         backBtn.GetComponent<Button>().onClick.AddListener(() => { });
+
+        // ==========================================
+        // TUTORIAL PANEL
+        // ==========================================
+        GameObject tutorialPanelObj = CreatePanel(canvasObj.transform, "TutorialPanel", Vector2.zero, new Vector2(750, 700));
+        tutorialPanelObj.SetActive(false);
+        mainMenu.tutorialPanel = tutorialPanelObj;
+
+        // Title
+        CreateText(tutorialPanelObj.transform, "TutorialTitle", "HOW TO PLAY",
+            new Vector2(0, 310), new Vector2(500, 50), 32, accentOrange, FontStyles.Bold, TextAlignmentOptions.Center);
+
+        // Scroll area
+        GameObject scrollArea = new GameObject("TutorialScrollArea");
+        scrollArea.transform.SetParent(tutorialPanelObj.transform, false);
+        RectTransform scrollRt = scrollArea.AddComponent<RectTransform>();
+        scrollRt.anchorMin = new Vector2(0.5f, 0.5f);
+        scrollRt.anchorMax = new Vector2(0.5f, 0.5f);
+        scrollRt.anchoredPosition = new Vector2(0, -20);
+        scrollRt.sizeDelta = new Vector2(700, 560);
+        Image scrollBg = scrollArea.AddComponent<Image>();
+        scrollBg.color = new Color(0.08f, 0.06f, 0.1f, 0.8f);
+        Mask scrollMask = scrollArea.AddComponent<Mask>();
+        scrollMask.showMaskGraphic = true;
+        ScrollRect scrollRect = scrollArea.AddComponent<ScrollRect>();
+        scrollRect.horizontal = false;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 80f;
+
+        // Content container
+        GameObject contentObj = new GameObject("Content");
+        contentObj.transform.SetParent(scrollArea.transform, false);
+        RectTransform contentRt = contentObj.AddComponent<RectTransform>();
+        contentRt.anchorMin = new Vector2(0, 1);
+        contentRt.anchorMax = new Vector2(1, 1);
+        contentRt.pivot = new Vector2(0.5f, 1f);
+        contentRt.anchoredPosition = Vector2.zero;
+        // Height will be set after adding all content
+
+        scrollRect.content = contentRt;
+
+        // Add tutorial sections
+        float contentY = -20f;
+        float headerSize = 20f;
+        float bodySize = 16f;
+        float sectionGap = 15f;
+        float lineHeight = 24f;
+        Color keyColor = new Color(1f, 0.85f, 0.3f, 1f); // Gold for key hints
+
+        // Helper to add a section
+        System.Action<string, string> addSection = (header, body) =>
+        {
+            // Header
+            var headerTmp = CreateText(contentObj.transform, header.Replace(" ", "") + "Header", header,
+                new Vector2(0, contentY), new Vector2(650, 28), (int)headerSize, accentOrange, FontStyles.Bold, TextAlignmentOptions.Left);
+            headerTmp.raycastTarget = false;
+            // Override anchor to top-center so items flow from the top
+            var headerRt = headerTmp.GetComponent<RectTransform>();
+            headerRt.anchorMin = new Vector2(0.5f, 1f);
+            headerRt.anchorMax = new Vector2(0.5f, 1f);
+            headerRt.anchoredPosition = new Vector2(0, contentY);
+            contentY -= 28f;
+
+            // Body - count lines for height
+            int lineCount = body.Split('\n').Length;
+            float bodyHeight = lineCount * lineHeight + 8f;
+            var bodyTmp = CreateText(contentObj.transform, header.Replace(" ", "") + "Body", body,
+                new Vector2(0, contentY), new Vector2(650, bodyHeight), (int)bodySize, textWhite, FontStyles.Normal, TextAlignmentOptions.Left);
+            bodyTmp.raycastTarget = false;
+            bodyTmp.richText = true;
+            var bodyRt = bodyTmp.GetComponent<RectTransform>();
+            bodyRt.anchorMin = new Vector2(0.5f, 1f);
+            bodyRt.anchorMax = new Vector2(0.5f, 1f);
+            bodyRt.anchoredPosition = new Vector2(0, contentY);
+            contentY -= bodyHeight + sectionGap;
+
+            // Divider line
+            GameObject divider = new GameObject(header.Replace(" ", "") + "Divider");
+            divider.transform.SetParent(contentObj.transform, false);
+            RectTransform divRt = divider.AddComponent<RectTransform>();
+            divRt.anchorMin = new Vector2(0.5f, 1f);
+            divRt.anchorMax = new Vector2(0.5f, 1f);
+            divRt.anchoredPosition = new Vector2(0, contentY);
+            divRt.sizeDelta = new Vector2(600, 1);
+            Image divImg = divider.AddComponent<Image>();
+            divImg.color = new Color(0.3f, 0.25f, 0.35f, 0.5f);
+            divImg.raycastTarget = false;
+            contentY -= sectionGap;
+        };
+
+        addSection("1.  MOVEMENT",
+            "<color=#FFD94A>W A S D</color>  to move around.\n" +
+            "Hold <color=#FFD94A>Shift</color>  to sprint.");
+
+        addSection("2.  JUMPING",
+            "Press <color=#FFD94A>Space</color>  to jump.\n" +
+            "Press <color=#FFD94A>Space</color>  again mid-air for a <color=#FF6E40>double jump</color>.");
+
+        addSection("3.  WALL SLIDING",
+            "Fall into any wall while airborne to <color=#FF6E40>cling</color> to it.\n" +
+            "You'll slide down slowly for a few seconds.\n" +
+            "Press <color=#FFD94A>Space</color>  while wall-sliding to <color=#FF6E40>wall jump</color> in the direction you're looking.");
+
+        addSection("4.  FIRING YOUR WEAPON",
+            "<color=#FFD94A>Left Click</color>  to fire your currently equipped spell.\n" +
+            "Spells cost <color=#00E5FF>Mana</color> — it regenerates over time.");
+
+        addSection("5.  SWITCHING WEAPONS",
+            "Press <color=#FFD94A>Q</color>  to cycle through your unlocked weapons.\n" +
+            "Your current weapon is shown in the bottom-right HUD.");
+
+        addSection("6.  PARRYING",
+            "Press <color=#FFD94A>F</color>  to punch.\n" +
+            "If an enemy fireball is nearby, you'll <color=#FF6E40>parry</color> it — redirecting it wherever you're aiming!");
+
+        addSection("7.  SELF-PARRY",
+            "Fire your own fireball, then quickly press <color=#FFD94A>F</color>  to punch it.\n" +
+            "This <color=#FF6E40>boosts</color> your fireball for massive damage.\n" +
+            "Master this for maximum destruction.");
+
+        addSection("8.  BOOKS",
+            "Collect glowing <color=#FF6E40>spell books</color> hidden in levels.\n" +
+            "Each book unlocks a <color=#FF6E40>new weapon</color> — Lightning, Parry Punch, and more.");
+
+        // Set content height
+        contentRt.sizeDelta = new Vector2(0, Mathf.Abs(contentY) + 20f);
+
+        // Back button (fixed at bottom of tutorial panel, outside scroll)
+        GameObject tutBackBtn = CreateButton(tutorialPanelObj.transform, "TutorialBackButton", "← BACK",
+            new Vector2(0, -320), new Vector2(200, 50), panelColor, subtleGray, 18);
+        tutBackBtn.GetComponent<Button>().onClick.AddListener(() => { });
 
         // ==========================================
         // SETTINGS PANEL (built by SettingsMenuBuilder logic, inline here)
@@ -253,6 +481,12 @@ public class MainMenuBuilder : Editor
         // Level Select Back
         UnityEditor.Events.UnityEventTools.AddPersistentListener(
             backBtn.GetComponent<Button>().onClick, mainMenu.OnLevelSelectBack);
+        // Tutorial
+        UnityEditor.Events.UnityEventTools.AddPersistentListener(
+            tutorialBtn.GetComponent<Button>().onClick, mainMenu.OnTutorialClicked);
+        // Tutorial Back
+        UnityEditor.Events.UnityEventTools.AddPersistentListener(
+            tutBackBtn.GetComponent<Button>().onClick, mainMenu.OnTutorialBackClicked);
         // Reset Defaults
         UnityEditor.Events.UnityEventTools.AddPersistentListener(
             resetBtn.GetComponent<Button>().onClick, settingsMenuComp.ResetDefaults);
@@ -293,9 +527,9 @@ public class MainMenuBuilder : Editor
         s1Rt.anchorMax = Vector2.one;
         s1Rt.sizeDelta = Vector2.zero;
 
-        CreateText(splash1.transform, "TeamNameText", "YOUR STUDIO NAME",
+        CreateText(splash1.transform, "TeamNameText", "Cole and Corben",
             new Vector2(0, 20), new Vector2(800, 80), 42, textWhite, FontStyles.Bold, TextAlignmentOptions.Center);
-        CreateText(splash1.transform, "TeamSubText", "presents",
+        CreateText(splash1.transform, "TeamSubText", "present",
             new Vector2(0, -40), new Vector2(400, 40), 20, subtleGray, FontStyles.Italic, TextAlignmentOptions.Center);
 
         // --- Splash 2: Game Title ---
@@ -306,10 +540,14 @@ public class MainMenuBuilder : Editor
         s2Rt.anchorMax = Vector2.one;
         s2Rt.sizeDelta = Vector2.zero;
 
-        CreateText(splash2.transform, "GameTitleText", "ILAMMTTSWMGAIHTGIBBCWS",
-            new Vector2(0, 20), new Vector2(1200, 100), 52, accentRed, FontStyles.Bold, TextAlignmentOptions.Center);
+        var gameTitleTmp = CreateText(splash2.transform, "GameTitleText",
+            "I LOST ALL MY MONEY TO THE\nSHADOW WIZARD MONEY GANG\nAND I NEED TO GET IT BACK\nBY CASTING WICKED SPELLS",
+            new Vector2(0, 40), new Vector2(1600, 300), 42, accentRed, FontStyles.Bold, TextAlignmentOptions.Center);
+        gameTitleTmp.enableAutoSizing = true;
+        gameTitleTmp.fontSizeMin = 18f;
+        gameTitleTmp.fontSizeMax = 42f;
         CreateText(splash2.transform, "GameSubtitleText", "— A Wizard's Descent —",
-            new Vector2(0, -50), new Vector2(600, 40), 22, accentOrange, FontStyles.Italic, TextAlignmentOptions.Center);
+            new Vector2(0, -130), new Vector2(600, 40), 22, accentOrange, FontStyles.Italic, TextAlignmentOptions.Center);
 
         // Wire up IntroSplash references
         introSplash.splashPanels = new GameObject[] { splash1, splash2 };

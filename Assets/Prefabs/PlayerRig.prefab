@@ -828,7 +828,7 @@ MonoBehaviour:
   unlockText: {fileID: 380606979736897937}
   flashOverlay: {fileID: 370287482683129219}
   displayDuration: 3
-  fadeSpeed: 5
+  fadeOutDuration: 0.5
   slideSpeed: 8
   slideDistance: 80
   modelSpawnPoint: {fileID: 0}
@@ -7360,7 +7360,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7915,7 +7915,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.392}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10545,7 +10545,6 @@ GameObject:
   - component: {fileID: 3553005977769621529}
   - component: {fileID: 96436608866772127}
   - component: {fileID: 8165321240845348523}
-  - component: {fileID: 1156981706331491897}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -10561,14 +10560,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9119737588610522600}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -8.513178, y: 2.16, z: 17.23}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -16.154, y: 13.2, z: -15.44}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1249296367782318648}
   m_Father: {fileID: 6706610844150544697}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!33 &6292769070834280510
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -10684,16 +10683,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 8
   runSpeed: 12
-  airAcceleration: 10
-  groundAcceleration: 14
-  friction: 8
+  airAcceleration: 15
+  groundAcceleration: 15
+  friction: 25
   jumpHeight: 2
   gravity: 20
   doubleJumpMultiplier: 0.5
   airControl: 0.3
-  wallStickDuration: 3
+  footstepLoop: {fileID: 8300000, guid: fc3bec4f5819c1745b6196b17ff5f2f9, type: 3}
+  footstepVolume: 0.15
+  footstepSpeedThreshold: 3
+  wallSlideSound: {fileID: 8300000, guid: 510e44aa0a421aa4b93903ec4aff6a70, type: 3}
+  wallSlideVolume: 0.5
+  fallSound: {fileID: 0}
+  fallVolume: 0.3
+  crashSound: {fileID: 0}
+  crashVolume: 0.6
+  wallSlideDuration: 3
+  wallSlideSpeed: 2
   wallJumpForce: 15
-  playerCamera: {fileID: 0}
+  playerCamera: {fileID: 3724303283701903035}
 --- !u!1 &9140375619736426739
 GameObject:
   m_ObjectHideFlags: 0
@@ -10845,6 +10854,14 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 7623931743288278657, guid: ae5f40f432fc12a4697fb2d2d11c9f24, type: 3}
+      propertyPath: airAcceleration
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7623931743288278657, guid: ae5f40f432fc12a4697fb2d2d11c9f24, type: 3}
+      propertyPath: groundAcceleration
+      value: 15
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -10861,9 +10878,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5765343865559713416, guid: ae5f40f432fc12a4697fb2d2d11c9f24, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8165321240845348523}
-    - targetCorrespondingSourceObject: {fileID: 5765343865559713416, guid: ae5f40f432fc12a4697fb2d2d11c9f24, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1156981706331491897}
     - targetCorrespondingSourceObject: {fileID: 6710895231530238065, guid: ae5f40f432fc12a4697fb2d2d11c9f24, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1207860109154189230}
@@ -10925,6 +10939,15 @@ MonoBehaviour:
   aimLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  fireballSound: {fileID: 8300000, guid: b967e62ee2eec794fb431679494a96c8, type: 3}
+  lightningCastSounds:
+  - {fileID: 8300000, guid: d7fb782c18608e5428886ffe7d622b0a, type: 3}
+  - {fileID: 8300000, guid: 4998563e311fd7d4c9e5e67adeb92ac9, type: 3}
+  lightningStrikeSound: {fileID: 8300000, guid: 9f40c170e1f16484ab168ccd78e06e8d, type: 3}
+  punchSound: {fileID: 8300000, guid: 070484088fe604047a5574171d1a21cf, type: 3}
+  parrySound: {fileID: 8300000, guid: 1f147c9dc8e933f489553abcaafa708f, type: 3}
+  punchSoundVolume: 0.6
+  parrySoundVolume: 0.8
   spawnOffset: 1
   weapons:
   - name: Fireball
@@ -10951,16 +10974,3 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth: 0
   damageCooldown: 0.5
---- !u!114 &1156981706331491897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9119737588610522600}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1841772351e41a43abce733045ce2cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  killHeight: -40

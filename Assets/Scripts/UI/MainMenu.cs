@@ -10,6 +10,7 @@ public class MainMenu : MonoBehaviour
     [Header("Panel References")]
     public GameObject mainPanel;
     public GameObject levelSelectPanel;
+    public GameObject tutorialPanel;
     public SettingsMenu settingsMenu;
 
     void Start()
@@ -30,6 +31,7 @@ public class MainMenu : MonoBehaviour
         if (mainPanel != null && FindFirstObjectByType<IntroSplash>() == null)
             mainPanel.SetActive(true);
         if (levelSelectPanel != null) levelSelectPanel.SetActive(false);
+        if (tutorialPanel != null) tutorialPanel.SetActive(false);
     }
 
     // --- Button Callbacks ---
@@ -61,6 +63,21 @@ public class MainMenu : MonoBehaviour
     public void OnSettingsBackClicked()
     {
         if (settingsMenu != null) settingsMenu.Close();
+        if (mainPanel != null) mainPanel.SetActive(true);
+    }
+
+    public void OnTutorialClicked()
+    {
+        if (tutorialPanel != null)
+        {
+            if (mainPanel != null) mainPanel.SetActive(false);
+            tutorialPanel.SetActive(true);
+        }
+    }
+
+    public void OnTutorialBackClicked()
+    {
+        if (tutorialPanel != null) tutorialPanel.SetActive(false);
         if (mainPanel != null) mainPanel.SetActive(true);
     }
 

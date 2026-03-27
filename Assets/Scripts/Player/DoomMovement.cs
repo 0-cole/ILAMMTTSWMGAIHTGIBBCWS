@@ -4,11 +4,11 @@ using UnityEngine;
 public class DoomMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 8f;
-    [SerializeField] private float runSpeed = 12f;
-    [SerializeField] private float airAcceleration = 10f;
-    [SerializeField] private float groundAcceleration = 14f;
-    [SerializeField] private float friction = 8f;
+    public float moveSpeed = 8f;
+    public float runSpeed = 12f;
+    public float airAcceleration = 25f;       // Increased for sharper mid-air control
+    public float groundAcceleration = 35f;    // Increased so player reaches max speed faster
+    public float friction = 25f;              // Increased so player stops sliding instantly
     
     [Header("Jump Settings")]
     [SerializeField] private float jumpHeight = 2f;

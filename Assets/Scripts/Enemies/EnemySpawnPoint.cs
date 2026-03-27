@@ -57,6 +57,7 @@ public class EnemySpawnPoint : MonoBehaviour
             if (ps != null)
             {
                 var main = ps.main;
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
                 main.loop = false;
                 main.duration = 0.5f;
                 main.startLifetime = 0.25f;
@@ -115,26 +116,18 @@ public class EnemySpawnPoint : MonoBehaviour
         enemy.transform.position = transform.position + Vector3.up * 1f;
         enemy.transform.rotation = transform.rotation;
 
-        // Quad visual
-        GameObject quadObj = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        quadObj.name = "BillboardQuad";
-        quadObj.transform.SetParent(enemy.transform, false);
-        quadObj.transform.localPosition = Vector3.zero;
-        quadObj.transform.localScale = new Vector3(quadScale, quadScale, 1f);
-        Object.Destroy(quadObj.GetComponent<Collider>());
+        // Sprite visual
+        GameObject spriteObj = new GameObject("BillboardSprite");
+        spriteObj.transform.SetParent(enemy.transform, false);
+        spriteObj.transform.localPosition = Vector3.zero;
 
-        // Sprite material
-        MeshRenderer quadRenderer = quadObj.GetComponent<MeshRenderer>();
-        if (billboardSprites != null && billboardSprites.Length > 0)
-        {
-            Sprite chosen = billboardSprites[Random.Range(0, billboardSprites.Length)];
-            quadRenderer.material = CreateSpriteQuadMaterial(chosen);
-        }
+        SpriteRenderer spriteRenderer = spriteObj.AddComponent<SpriteRenderer>();
 
         if (billboardSprites != null && billboardSprites.Length > 0)
         {
             BillboardSpriteRandomizer randomizer = enemy.AddComponent<BillboardSpriteRandomizer>();
             randomizer.possibleSprites = billboardSprites;
+            randomizer.targetWorldHeight = quadScale;
         }
 
         // Physics
@@ -199,25 +192,6 @@ public class EnemySpawnPoint : MonoBehaviour
     {
         var field = type.GetField(fieldName, flags);
         if (field != null) field.SetValue(target, value);
-    }
-
-    private Material CreateSpriteQuadMaterial(Sprite sprite)
-    {
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) shader = Shader.Find("Standard");
-
-        Material mat = new Material(shader);
-        mat.mainTexture = sprite.texture;
-        mat.SetFloat("_AlphaClip", 1f);
-        mat.SetFloat("_Cutoff", 0.5f);
-        mat.SetFloat("_Surface", 0);
-        mat.EnableKeyword("_ALPHATEST_ON");
-        mat.renderQueue = 2450;
-        mat.SetFloat("_Mode", 1);
-        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-        mat.SetInt("_ZWrite", 1);
-        return mat;
     }
 
     void OnDrawGizmos()

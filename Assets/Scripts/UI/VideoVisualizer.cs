@@ -44,6 +44,12 @@ public class VideoVisualizer : MonoBehaviour
         videoPlayer.isLooping = true;
         videoPlayer.audioOutputMode = VideoAudioOutputMode.None; // Music handled separately
         videoPlayer.playOnAwake = false;
+        // Belt-and-suspenders: mute all audio tracks
+        for (ushort i = 0; i < videoPlayer.audioTrackCount; i++)
+        {
+            videoPlayer.SetDirectAudioMute(i, true);
+            videoPlayer.SetDirectAudioVolume(i, 0f);
+        }
         videoPlayer.Play();
 
         rawImage.texture = renderTexture;

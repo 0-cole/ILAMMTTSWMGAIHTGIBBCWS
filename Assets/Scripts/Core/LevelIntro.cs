@@ -225,11 +225,9 @@ public class LevelIntro : MonoBehaviour
 
         if (voidCap != null) Destroy(voidCap);
 
-        if (ceilingCapPrefab != null)
+        if (ceilingCapPrefab != null && ceilingCapSpawnPoint != null)
         {
-            Vector3 capPos = ceilingCapSpawnPoint != null ? ceilingCapSpawnPoint.position : transform.position;
-            Quaternion capRot = ceilingCapSpawnPoint != null ? ceilingCapSpawnPoint.rotation : Quaternion.identity;
-            Instantiate(ceilingCapPrefab, capPos, capRot);
+            Instantiate(ceilingCapPrefab, ceilingCapSpawnPoint.position, ceilingCapSpawnPoint.rotation);
         }
 
         if (landingFreezeDuration > 0f)
